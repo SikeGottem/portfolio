@@ -1,44 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import MagneticButton from "./MagneticButton";
 
-export default function Nav({ spaceGrotesk, jetBrainsMono }: { spaceGrotesk: string; jetBrainsMono: string }) {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
+export default function Nav() {
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between transition-all duration-300 ${
-        scrolled ? "py-3 px-6 bg-[#0a0a0a]/80 backdrop-blur-md" : "py-6 px-8"
-      }`}
-    >
-      <a href="/" className={`${spaceGrotesk} text-sm tracking-tight text-foreground hover:text-accent transition-colors`}>
-        ethan wu
-      </a>
+    <nav className="fixed top-0 left-0 right-0 z-50 flex items-start justify-between px-6 md:px-12 lg:px-16 py-5 pointer-events-none bg-[#F5F2EE]/90 backdrop-blur-md">
+      <MagneticButton
+        href="/"
+        className="font-[family-name:var(--font-space)] text-sm font-medium uppercase tracking-[0.25em] text-[#1A1A1A] pointer-events-auto"
+      >
+        Zen Lab
+      </MagneticButton>
 
-      <div className="flex items-center gap-6">
-        {["work", "about", "contact"].map((item) => (
-          <a
+      <div className="flex flex-row items-center gap-6 pointer-events-auto">
+        {["Work", "About", "Contact"].map((item) => (
+          <MagneticButton
             key={item}
-            href={`#${item}`}
-            className={`${jetBrainsMono} text-xs uppercase tracking-widest text-muted hover:text-foreground transition-colors`}
+            href={`#${item.toLowerCase()}`}
+            className="font-[family-name:var(--font-space)] text-[13px] font-medium uppercase tracking-[0.15em] text-[#1A1A1A] hover:text-[#E05252] transition-colors"
           >
             {item}
-          </a>
+          </MagneticButton>
         ))}
-        <a
-          href="https://briefed.app"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`${jetBrainsMono} text-xs uppercase tracking-widest text-muted hover:text-accent transition-colors`}
-        >
-          ↗ briefed
-        </a>
       </div>
     </nav>
   );

@@ -1,29 +1,35 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { projects } from "@/lib/projects";
+import { experiments } from "@/lib/projects";
 
 export function generateStaticParams() {
-  return projects.map((p) => ({ slug: p.slug }));
+  return experiments.map((p) => ({ slug: p.slug }));
 }
 
-export default async function WorkPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function LabPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const idx = projects.findIndex((p) => p.slug === slug);
+  const idx = experiments.findIndex((p) => p.slug === slug);
   if (idx === -1) notFound();
 
-  const project = projects[idx];
-  const next = projects[(idx + 1) % projects.length];
+  const project = experiments[idx];
+  const next = experiments[(idx + 1) % experiments.length];
 
   return (
     <main className="min-h-screen px-6 md:px-10 py-16 md:py-24">
       <Link
-        href="/#work"
+        href="/#lab"
         className="font-[family-name:var(--font-space)] text-sm uppercase tracking-[0.2em] text-[#999] hover:text-[#1A1A1A] transition-colors inline-flex items-center gap-2 mb-16"
       >
         ← Back
       </Link>
 
       <div className="max-w-3xl mx-auto">
+        <div className="mb-4">
+          <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[#999] border border-[#999]/30 rounded px-2 py-1">
+            LAB
+          </span>
+        </div>
+        
         <h1 className="font-[family-name:var(--font-display)] italic text-5xl md:text-7xl lg:text-8xl text-[#1A1A1A] mb-8">
           {project.name}
         </h1>
@@ -67,7 +73,7 @@ export default async function WorkPage({ params }: { params: Promise<{ slug: str
         </div>
 
         <Link
-          href={`/work/${next.slug}`}
+          href={`/lab/${next.slug}`}
           className="font-[family-name:var(--font-space)] text-sm uppercase tracking-[0.2em] text-[#999] hover:text-[#1A1A1A] transition-colors inline-flex items-center gap-2"
         >
           Next Project — {next.name} →
