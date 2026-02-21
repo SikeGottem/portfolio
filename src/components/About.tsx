@@ -218,68 +218,70 @@ export default function About() {
 
       {/* ── BEAT 3 · THE FACTS (stat grid) ── */}
       <div className="px-[var(--site-px)] pb-32 md:pb-48">
-        <RevealOnScroll>
-          <div className="flex items-center gap-3 mb-16 md:mb-24">
-            <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.3em] text-[#bbb]">
-              Quick facts
-            </span>
-            <span className="w-6 h-px bg-black/[0.15]" />
-          </div>
-        </RevealOnScroll>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-14 md:gap-y-20 max-w-[800px] mx-auto">
-          {stats.map((s, i) => (
-            <RevealOnScroll key={s.label} delay={i * 0.06}>
-              <div>
-                <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.25em] text-[#bbb] block mb-2">
-                  {s.label}
-                </span>
-                <span className="font-[family-name:var(--font-space)] text-[1.1rem] md:text-[1.3rem] text-[#1A1A1A]">
-                  {s.value}
-                </span>
-              </div>
-            </RevealOnScroll>
-          ))}
-        </div>
-
-        {/* Clients inline */}
-        <RevealOnScroll delay={0.3}>
-          <div className="mt-24 md:mt-32">
-            <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.25em] text-[#bbb] block mb-4">
-              Selected clients
-            </span>
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
-              {clients.map((c, i) => (
-                <span
-                  key={c}
-                  className="font-[family-name:var(--font-inter)] text-[14px] text-[#777]"
-                >
-                  {c}
-                  {i < clients.length - 1 && (
-                    <span className="ml-6 text-[#ddd]">·</span>
-                  )}
-                </span>
-              ))}
+        <div className="max-w-[800px] mx-auto">
+          <RevealOnScroll>
+            <div className="flex items-center gap-3 mb-16 md:mb-24">
+              <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.3em] text-[#bbb]">
+                Quick facts
+              </span>
+              <span className="w-6 h-px bg-black/[0.15]" />
             </div>
+          </RevealOnScroll>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-14 md:gap-y-20">
+            {stats.map((s, i) => (
+              <RevealOnScroll key={s.label} delay={i * 0.06}>
+                <div>
+                  <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.25em] text-[#bbb] block mb-2">
+                    {s.label}
+                  </span>
+                  <span className="font-[family-name:var(--font-space)] text-[1.1rem] md:text-[1.3rem] text-[#1A1A1A]">
+                    {s.value}
+                  </span>
+                </div>
+              </RevealOnScroll>
+            ))}
           </div>
-        </RevealOnScroll>
+
+          {/* Clients inline */}
+          <RevealOnScroll delay={0.3}>
+            <div className="mt-24 md:mt-32">
+              <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.25em] text-[#bbb] block mb-4">
+                Selected clients
+              </span>
+              <div className="flex flex-wrap gap-x-6 gap-y-2">
+                {clients.map((c, i) => (
+                  <span
+                    key={c}
+                    className="font-[family-name:var(--font-inter)] text-[14px] text-[#777]"
+                  >
+                    {c}
+                    {i < clients.length - 1 && (
+                      <span className="ml-6 text-[#ddd]">·</span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </RevealOnScroll>
+        </div>
       </div>
 
       {/* ── BEAT 4 · SERVICES (list, not cards) ── */}
       <div className="px-[var(--site-px)] pt-32 md:pt-44 pb-32 md:pb-48">
-        <RevealOnScroll>
-          <div className="flex items-center gap-3 mb-12 md:mb-16">
-            <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.3em] text-[#bbb]">
-              Services
-            </span>
-            <span className="w-6 h-px bg-black/[0.15]" />
-            <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#ccc]">
-              02
-            </span>
-          </div>
-        </RevealOnScroll>
-
         <div className="max-w-[900px] mx-auto">
+          <RevealOnScroll>
+            <div className="flex items-center gap-3 mb-12 md:mb-16">
+              <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.3em] text-[#bbb]">
+                Services
+              </span>
+              <span className="w-6 h-px bg-black/[0.15]" />
+              <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#ccc]">
+                02
+              </span>
+            </div>
+          </RevealOnScroll>
+
           <div className="border-t border-black/[0.06]" />
           {services.map((s, i) => (
             <ServiceRow key={s.title} title={s.title} desc={s.desc} index={i} />
@@ -289,19 +291,20 @@ export default function About() {
 
       {/* ── BEAT 5 · TOOLS (weighted cloud) ── */}
       <div className="px-[var(--site-px)] pt-32 md:pt-44 pb-36 md:pb-52">
-        <RevealOnScroll>
-          <div className="flex items-center gap-3 mb-12 md:mb-16">
-            <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.3em] text-[#bbb]">
-              Tools
-            </span>
-            <span className="w-6 h-px bg-black/[0.15]" />
-            <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#ccc]">
-              03
-            </span>
-          </div>
-        </RevealOnScroll>
+        <div className="max-w-[900px] mx-auto">
+          <RevealOnScroll>
+            <div className="flex items-center gap-3 mb-12 md:mb-16">
+              <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.3em] text-[#bbb]">
+                Tools
+              </span>
+              <span className="w-6 h-px bg-black/[0.15]" />
+              <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#ccc]">
+                03
+              </span>
+            </div>
+          </RevealOnScroll>
 
-        <div className="flex flex-wrap items-baseline justify-center gap-x-5 gap-y-3 md:gap-x-7 md:gap-y-4 max-w-[900px] mx-auto">
+        <div className="flex flex-wrap items-baseline justify-center gap-x-5 gap-y-3 md:gap-x-7 md:gap-y-4">
           {tools.map((t, i) => (
             <RevealOnScroll key={t.name} delay={i * 0.03}>
               <span
@@ -318,6 +321,7 @@ export default function About() {
             </RevealOnScroll>
           ))}
         </div>
+        </div>
       </div>
 
       {/* ── BEAT 6 · PERSONALITY CLOSER ── */}
@@ -332,7 +336,7 @@ export default function About() {
             </p>
           </RevealOnScroll>
           <RevealOnScroll delay={0.15}>
-            <p className="font-[family-name:var(--font-inter)] text-[14px] leading-[1.9] text-[#999] mt-8 max-w-[500px]">
+            <p className="font-[family-name:var(--font-inter)] text-[14px] leading-[1.9] text-[#999] mt-8 max-w-[500px] mx-auto">
               More hungry startup founder than polished agency.
               Loves hip-hop, garlic, and building things.
               Hates being ordinary.
