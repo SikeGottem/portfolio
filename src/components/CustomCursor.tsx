@@ -39,6 +39,8 @@ export default function CustomCursor() {
   const directionThinning = useRef(0);
   const stillFrames = useRef(0);
   const mouseDown = useRef(false);
+  const hasDrawn = useRef(false);
+  const promptRef = useRef<HTMLDivElement>(null);
   const drips = useRef<Drip[]>([]);
   const posHistory = useRef<{ x: number; y: number }[]>([]);
   const thickPoints = useRef<{ x: number; y: number; born: number; width: number }[]>([]);
@@ -83,7 +85,16 @@ export default function CustomCursor() {
     resizeObserver.observe(document.documentElement);
     let lastInkTime = 0;
 
-    const onMouseDown = () => { mouseDown.current = true; };
+    const onMouseDown = () => {
+      mouseDown.current = true;
+      if (!hasDrawn.current) {
+        hasDrawn.current = true;
+        if (promptRef.current) {
+          promptRef.current.style.transition = "opacity 0.5s ease";
+          promptRef.current.style.opacity = "0";
+        }
+      }
+    };
     const onMouseUp = () => { mouseDown.current = false; };
     window.addEventListener("mousedown", onMouseDown);
     window.addEventListener("mouseup", onMouseUp);
@@ -228,6 +239,21 @@ export default function CustomCursor() {
       }
       if (labelRef.current) {
         labelRef.current.style.transform = `translate(${e.clientX + 16}px, ${e.clientY - 18}px)`;
+      }
+      // Prompt follows cursor + auto-hide after 3s
+      if (promptRef.current && !hasDrawn.current) {
+        promptRef.current.style.transform = `translate(${e.clientX + 20}px, ${e.clientY + 14}px)`;
+        if (!promptRef.current.dataset.shown) {
+          promptRef.current.dataset.shown = "1";
+          promptRef.current.style.opacity = "1";
+          setTimeout(() => {
+            if (!hasDrawn.current && promptRef.current) {
+              hasDrawn.current = true;
+              promptRef.current.style.transition = "opacity 0.5s ease";
+              promptRef.current.style.opacity = "0";
+            }
+          }, 3000);
+        }
       }
     };
 
@@ -503,6 +529,40 @@ export default function CustomCursor() {
       >
         VIEW
       </div>
+
+      {/* "Go ahead, draw something" prompt — follows cursor, fades after first stroke */}
+      <div
+        ref={promptRef}
+        className="fixed top-0 left-0 pointer-events-none z-[10000]"
+        style={{
+          opacity: 0,
+          willChange: "transform",
+          fontFamily: "var(--font-mono), monospace",
+          fontSize: "11px",
+          fontWeight: 400,
+          letterSpacing: "0.15em",
+          textTransform: "uppercase" as const,
+          color: "#1A1A1A",
+          whiteSpace: "nowrap",
+          transition: "opacity 0.4s ease",
+        }}
+      >
+        {/* Animated hold indicator */}
+        <svg width="14" height="18" viewBox="0 0 14 18" fill="none" style={{ display: "inline-block", verticalAlign: "middle", marginRight: 6, marginTop: -1 }}>
+          {/* Mouse body */}
+          <rect x="1" y="1" width="12" height="16" rx="6" stroke="#1A1A1A" strokeWidth="1.2" fill="none" />
+          {/* Scroll line / click indicator */}
+          <line x1="7" y1="4" x2="7" y2="7" stroke="#1A1A1A" strokeWidth="1.2" strokeLinecap="round">
+            <animate attributeName="opacity" values="1;0.3;1" dur="1.4s" repeatCount="indefinite" />
+          </line>
+          {/* Press-down arrow */}
+          <path d="M5 12 L7 14.5 L9 12" stroke="#1A1A1A" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" fill="none">
+            <animate attributeName="opacity" values="0;1;1;0" dur="1.4s" repeatCount="indefinite" />
+          </path>
+        </svg>
+        click + hold to draw
+      </div>
+
     </>
   );
 }
