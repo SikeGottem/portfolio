@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useMotionValue } from "framer-motion";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 import type { Project } from "@/lib/projects";
 
 export default function WorkItem({
@@ -17,15 +17,24 @@ export default function WorkItem({
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLAnchorElement>(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
 
-  function handleMouseMove(e: React.MouseEvent) {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    x.set(e.clientX - rect.left + 20);
-    y.set(e.clientY - rect.top + 20);
-  }
+  /* ── Mouse-follow image position ── */
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+  const x = useSpring(rawX, { stiffness: 150, damping: 25 });
+  const y = useSpring(rawY, { stiffness: 150, damping: 25 });
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      rawX.set(e.clientX - rect.left);
+      rawY.set(e.clientY - rect.top);
+    },
+    [rawX, rawY]
+  );
+
+  const num = index.toString().padStart(2, "0");
 
   return (
     <Link
@@ -37,59 +46,151 @@ export default function WorkItem({
       onMouseLeave={() => setIsHovered(false)}
       onMouseMove={handleMouseMove}
     >
-      <div className="border-t border-dashed border-black/10 py-8 md:py-10 flex flex-col md:flex-row md:items-baseline gap-6 md:gap-8">
-        {/* Project number and name */}
-        <div className="flex items-baseline gap-4 md:gap-6">
-          <span className="font-[family-name:var(--font-mono)] text-[13px] text-[#999] transition-all duration-300 group-hover:text-[#E05252] flex-shrink-0">
-            {index.toString().padStart(2, "0")}
+      <div className="px-[var(--site-px)]">
+        <div className="border-b border-black/[0.06] py-14 md:py-20 lg:py-24 relative overflow-hidden">
+          {/* ── Ghost number — large background element ── */}
+          <span
+            className="
+              absolute -right-4 md:right-8 top-1/2 -translate-y-1/2
+              font-[family-name:var(--font-display)] italic
+              text-[8rem] md:text-[12rem] lg:text-[16rem] leading-none
+              text-black/[0.03] select-none pointer-events-none
+              transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]
+              group-hover:text-[#E05252]/[0.06] group-hover:scale-110
+            "
+          >
+            {num}
           </span>
-          <h3 className="font-[family-name:var(--font-display)] italic text-4xl md:text-5xl lg:text-6xl text-[#1A1A1A] transition-all duration-300">
-            {project.name}
-          </h3>
-        </div>
 
-        <div className="flex-1 flex flex-col md:flex-row md:items-baseline gap-4 md:gap-6 md:ml-8">
-          <p className="font-[family-name:var(--font-inter)] text-sm text-[#999] flex-1 transition-all duration-300 group-hover:text-[#666]">
-            {project.description}
-          </p>
-          <div className="flex items-center gap-4">
-            <div className="flex gap-2">
-              {project.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.15em] text-[#999] border border-black/10 rounded-full px-3 py-0.5"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-            <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#bbb]">
-              {project.year}
+          {/* ── Main row ── */}
+          <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-0 relative z-10">
+            {/* Number */}
+            <span
+              className="
+                font-[family-name:var(--font-mono)] text-[11px] text-[#ccc]
+                md:w-20 flex-shrink-0
+                transition-all duration-600
+                group-hover:text-[#E05252]
+              "
+            >
+              {num}
             </span>
+
+            {/* Title — dominant element */}
+            <h3
+              className="
+                font-[family-name:var(--font-display)] italic
+                text-[clamp(2.5rem,6vw,5.5rem)] leading-[0.9] tracking-[-0.03em]
+                text-[#1A1A1A]
+                transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]
+                group-hover:translate-x-3 md:group-hover:translate-x-8
+                group-hover:text-[#1A1A1A]
+                flex-1
+              "
+            >
+              {project.name}
+            </h3>
+
+            {/* Right side — meta */}
+            <div
+              className="
+                flex items-center gap-6 md:ml-auto
+                transition-all duration-600
+                opacity-50 group-hover:opacity-100
+                group-hover:-translate-x-2
+              "
+            >
+              {/* Tags */}
+              <div className="flex gap-2">
+                {project.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="
+                      font-[family-name:var(--font-mono)] text-[9px]
+                      uppercase tracking-[0.2em] text-[#999]
+                      border border-black/[0.06] rounded-full px-3 py-1.5
+                      transition-all duration-500
+                      group-hover:border-[#E05252]/20 group-hover:text-[#666]
+                    "
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              {/* Year */}
+              <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#bbb] tabular-nums">
+                {project.year}
+              </span>
+
+              {/* Arrow */}
+              <span
+                className="
+                  hidden md:inline-flex items-center justify-center
+                  w-10 h-10 rounded-full border border-black/[0.08]
+                  text-[#ccc] text-sm
+                  transition-all duration-600
+                  group-hover:border-[#E05252] group-hover:text-white
+                  group-hover:bg-[#E05252] group-hover:scale-110
+                  group-hover:rotate-45
+                "
+              >
+                ↗
+              </span>
+            </div>
+          </div>
+
+          {/* ── Description — reveals on hover (desktop) / always visible (mobile) ── */}
+          <div className="md:pl-20 mt-4 md:mt-0 overflow-hidden relative z-10">
+            <p
+              className="
+                font-[family-name:var(--font-inter)] text-[13px] leading-[1.7] text-[#999] max-w-lg
+                md:max-h-0 md:opacity-0 md:translate-y-4
+                md:transition-all md:duration-600 md:ease-[cubic-bezier(0.22,1,0.36,1)]
+                md:group-hover:max-h-24 md:group-hover:opacity-100 md:group-hover:translate-y-0
+                md:group-hover:mt-5
+              "
+            >
+              {project.description}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Hover preview image — desktop only (pointer: fine) */}
+      {/* ── Hover preview image — follows cursor, desktop only ── */}
       {project.previewImage && (
         <motion.div
-          className="hidden pointer-fine:block absolute top-0 left-0 z-50 pointer-events-none w-[300px] h-[200px] rounded-lg overflow-hidden shadow-lg"
+          className="
+            hidden pointer-fine:block
+            absolute top-0 left-0 z-50 pointer-events-none
+            w-[420px] h-[280px] rounded-xl overflow-hidden
+            shadow-2xl shadow-black/10
+          "
           style={{
             x,
             y,
-            rotate: 2.5,
+            translateX: "-50%",
+            translateY: "-120%",
           }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: isHovered ? 1 : 0 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
+          animate={{
+            opacity: isHovered ? 1 : 0,
+            scale: isHovered ? 1 : 0.85,
+            rotate: isHovered ? -3 : -6,
+          }}
+          transition={{
+            duration: 0.4,
+            ease: [0.22, 1, 0.36, 1],
+          }}
         >
           <Image
             src={project.previewImage}
             alt={project.name}
             fill
             className="object-cover"
-            sizes="300px"
+            sizes="420px"
           />
+          {/* Overlay gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
         </motion.div>
       )}
     </Link>

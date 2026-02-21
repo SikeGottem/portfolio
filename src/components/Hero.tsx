@@ -433,46 +433,45 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
               />
             </div>
 
-            {/* Lab — outline/stroke only, center-right, overlaps slightly */}
-            <div className="absolute top-[35%] right-[5%] hero-stroke-text">
-              <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
-                text="Lab"
-                baseDelay={0.4}
-                className="font-[family-name:var(--font-display)] italic leading-[0.88] tracking-[-0.04em] text-[clamp(7rem,18vw,20rem)]"
-              />
-            </div>
-
-            {/* Creative — bottom, offset right, solid fill */}
-            <div className="absolute bottom-0 left-[30%]">
+            {/* Creative — outline/stroke only, baseline-aligned with Lab */}
+            <div className="absolute bottom-[6%] right-[3%] hero-stroke-text">
               <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
                 text="Creative"
+                baseDelay={0.4}
+                className="font-[family-name:var(--font-display)] italic leading-[0.88] tracking-[-0.04em] text-[clamp(4rem,10vw,11rem)]"
+              />
+            </div>
+
+            {/* Lab — bottom-left, below Zen with breathing room */}
+            <div className="absolute bottom-[4%] left-[18%]">
+              <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
+                text="Lab"
                 baseDelay={0.6}
-                className={`${heroFont} text-[clamp(4rem,10vw,10rem)]`}
+                className={`${heroFont} text-[clamp(5rem,14vw,15rem)]`}
               />
             </div>
           </div>
 
-          {/* ── Bottom bar: description + studio location ── */}
-          <div className="flex justify-between items-baseline mt-8">
-            <motion.p
-              className="max-w-[360px] font-[family-name:var(--font-space)] text-[13px] leading-relaxed text-[#999]"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: EASE, delay: 1.2 }}
-            >
-              A one-person studio. Small by design, sharp by nature.
-            </motion.p>
-            <motion.span
-              className={monoMeta}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: EASE, delay: 1.3 }}
-            >
-              Studio — Sydney
-            </motion.span>
-          </div>
         </div>
       </motion.div>
+
+      {/* ── Bottom bar: pinned to section bottom corners, matching top metadata padding ── */}
+      <motion.p
+        className="absolute bottom-16 left-[var(--site-px)] max-w-[360px] font-[family-name:var(--font-space)] text-[13px] leading-relaxed text-[#999] z-10"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: EASE, delay: 1.2 }}
+      >
+        A one-person studio. Small by design, sharp by nature.
+      </motion.p>
+      <motion.span
+        className={`absolute bottom-16 right-[var(--site-px)] ${monoMeta} z-10`}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: EASE, delay: 1.3 }}
+      >
+        Studio — Sydney
+      </motion.span>
 
       {/* ── Scroll indicator: bottom-right ── */}
       <motion.div
