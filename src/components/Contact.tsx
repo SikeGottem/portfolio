@@ -55,7 +55,7 @@ export default function Contact() {
       {/* Footer */}
       <div className="px-[var(--site-px)] border-t border-white/[0.06] mt-32 md:mt-44 py-6 flex flex-col md:flex-row justify-between gap-3">
         <span className="font-[family-name:var(--font-mono)] text-[10px] text-[#444]">
-          © 2026 Zen Lab Creative
+          © 2026 Ethan Wu
         </span>
         <span className="font-[family-name:var(--font-mono)] text-[10px] text-[#444]">
           Built with Next.js · Set in Instrument Serif

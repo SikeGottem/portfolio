@@ -381,19 +381,14 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
         {/* ── MOBILE: centered stack ── */}
         <div className="md:hidden flex flex-col items-center">
           <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
-            text="Zen"
+            text="Ethan"
             baseDelay={0.2}
             className={`${heroFont} ${bigSize}`}
           />
           <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
-            text="Lab"
+            text="Wu"
             baseDelay={0.4}
             className={`${heroFont} ${bigSize} mt-[-0.1em]`}
-          />
-          <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
-            text="Creative"
-            baseDelay={0.6}
-            className={`${heroFont} ${smallSize} mt-[-0.05em]`}
           />
           <motion.p
             className="mt-8 max-w-[280px] text-center font-[family-name:var(--font-space)] text-[12px] leading-relaxed text-[#999]"
@@ -423,31 +418,22 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
              • Words flow diagonally across the viewport using the full width
         ── */}
         <div className="hidden md:block">
-          <div ref={desktopTextRef} className="relative" style={{ transition: "transform 0.3s ease-out", height: "clamp(22rem, 50vh, 36rem)" }}>
-            {/* Zen — massive, top-left anchor */}
+          <div ref={desktopTextRef} className="relative" style={{ transition: "transform 0.3s ease-out", height: "clamp(28rem, 60vh, 44rem)" }}>
+            {/* Ethan — small contextual label, top-left */}
             <div className="absolute top-0 left-0">
               <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
-                text="Zen"
+                text="Ethan"
                 baseDelay={0.2}
-                className={`${heroFont} text-[clamp(7rem,20vw,22rem)]`}
+                className={`${heroFont} text-[clamp(1.8rem,5vw,5rem)]`}
               />
             </div>
 
-            {/* Creative — outline/stroke only, baseline-aligned with Lab */}
-            <div className="absolute bottom-[6%] right-[3%] hero-stroke-text">
+            {/* Wu — HERO, massive solid fill, center-bottom */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2">
               <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
-                text="Creative"
+                text="Wu"
                 baseDelay={0.4}
-                className="font-[family-name:var(--font-display)] italic leading-[0.88] tracking-[-0.04em] text-[clamp(4rem,10vw,11rem)]"
-              />
-            </div>
-
-            {/* Lab — bottom-left, below Zen with breathing room */}
-            <div className="absolute bottom-[4%] left-[18%]">
-              <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
-                text="Lab"
-                baseDelay={0.6}
-                className={`${heroFont} text-[clamp(5rem,14vw,15rem)]`}
+                className={`${heroFont} text-[clamp(14rem,45vw,50rem)] whitespace-nowrap`}
               />
             </div>
           </div>

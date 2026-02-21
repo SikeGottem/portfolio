@@ -9,7 +9,7 @@ export default function Nav() {
         href="/"
         className="font-[family-name:var(--font-space)] text-sm font-medium uppercase tracking-[0.25em] text-[#1A1A1A] pointer-events-auto"
       >
-        Zen Lab
+        Ethan Wu
       </MagneticButton>
 
       <div className="flex flex-row items-center gap-6 pointer-events-auto">

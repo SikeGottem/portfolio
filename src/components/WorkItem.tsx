@@ -47,13 +47,13 @@ export default function WorkItem({
       onMouseMove={handleMouseMove}
     >
       <div className="px-[var(--site-px)]">
-        <div className="border-b border-black/[0.06] py-14 md:py-20 lg:py-24 relative overflow-hidden">
+        <div className="border-b border-black/[0.06] py-16 md:py-28 lg:py-36 relative overflow-hidden">
           {/* ── Ghost number — large background element ── */}
           <span
             className="
               absolute -right-4 md:right-8 top-1/2 -translate-y-1/2
               font-[family-name:var(--font-display)] italic
-              text-[8rem] md:text-[12rem] lg:text-[16rem] leading-none
+              text-[6rem] md:text-[8rem] lg:text-[10rem] leading-none
               text-black/[0.03] select-none pointer-events-none
               transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]
               group-hover:text-[#E05252]/[0.06] group-hover:scale-110
@@ -80,7 +80,7 @@ export default function WorkItem({
             <h3
               className="
                 font-[family-name:var(--font-display)] italic
-                text-[clamp(2.5rem,6vw,5.5rem)] leading-[0.9] tracking-[-0.03em]
+                text-[clamp(1.8rem,4vw,3.5rem)] leading-[0.95] tracking-[-0.02em]
                 text-[#1A1A1A]
                 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]
                 group-hover:translate-x-3 md:group-hover:translate-x-8

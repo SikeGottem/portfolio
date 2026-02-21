@@ -39,9 +39,9 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Zen Lab Creative — Design Studio",
+  title: "Ethan Wu — Design Studio",
   description:
-    "Zen Lab Creative is a design studio crafting brands, websites, and digital experiences. Based in Sydney.",
+    "Ethan Wu is a design studio crafting brands, websites, and digital experiences. Based in Sydney.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

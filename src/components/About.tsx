@@ -27,7 +27,7 @@ const stats = [
   { label: "Based in", value: "Sydney" },
   { label: "Studying", value: "Commerce × Design" },
   { label: "At", value: "UNSW" },
-  { label: "Studio", value: "Zen Lab Creative" },
+  { label: "Studio", value: "Ethan Wu" },
   { label: "Building", value: "Briefed" },
 ];
 
@@ -151,7 +151,7 @@ export default function About() {
         </RevealOnScroll>
 
         {/* Mixed-weight typographic intro */}
-        <div className="max-w-[1200px]">
+        <div className="max-w-[1200px] mx-auto">
           <TextReveal
             text="I'm Ethan Wu —"
             as="h2"
@@ -167,10 +167,10 @@ export default function About() {
         </div>
 
         {/* Two-column blurb */}
-        <div className="mt-20 md:mt-32 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 max-w-[900px]">
+        <div className="mt-20 md:mt-32 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 max-w-[900px] mx-auto">
           <RevealOnScroll>
             <p className="font-[family-name:var(--font-inter)] text-[15px] leading-[1.9] text-[#555]">
-              I run Zen Lab Creative out of Sydney. No account managers, no
+              I run Ethan Wu out of Sydney. No account managers, no
               handoffs, no revolving door — when you work with me, you work
               with me. Start to finish.
             </p>
@@ -227,7 +227,7 @@ export default function About() {
           </div>
         </RevealOnScroll>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-14 md:gap-y-20 max-w-[800px]">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-14 md:gap-y-20 max-w-[800px] mx-auto">
           {stats.map((s, i) => (
             <RevealOnScroll key={s.label} delay={i * 0.06}>
               <div>
@@ -266,7 +266,7 @@ export default function About() {
       </div>
 
       {/* ── BEAT 4 · SERVICES (list, not cards) ── */}
-      <div className="px-[var(--site-px)] pt-24 md:pt-36 pb-32 md:pb-48">
+      <div className="px-[var(--site-px)] pt-32 md:pt-44 pb-32 md:pb-48">
         <RevealOnScroll>
           <div className="flex items-center gap-3 mb-12 md:mb-16">
             <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.3em] text-[#bbb]">
@@ -279,7 +279,7 @@ export default function About() {
           </div>
         </RevealOnScroll>
 
-        <div className="max-w-[900px]">
+        <div className="max-w-[900px] mx-auto">
           <div className="border-t border-black/[0.06]" />
           {services.map((s, i) => (
             <ServiceRow key={s.title} title={s.title} desc={s.desc} index={i} />
@@ -288,7 +288,7 @@ export default function About() {
       </div>
 
       {/* ── BEAT 5 · TOOLS (weighted cloud) ── */}
-      <div className="px-[var(--site-px)] pt-24 md:pt-36 pb-36 md:pb-52">
+      <div className="px-[var(--site-px)] pt-32 md:pt-44 pb-36 md:pb-52">
         <RevealOnScroll>
           <div className="flex items-center gap-3 mb-12 md:mb-16">
             <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.3em] text-[#bbb]">
@@ -301,7 +301,7 @@ export default function About() {
           </div>
         </RevealOnScroll>
 
-        <div className="flex flex-wrap items-baseline gap-x-5 gap-y-3 md:gap-x-7 md:gap-y-4 max-w-[900px]">
+        <div className="flex flex-wrap items-baseline justify-center gap-x-5 gap-y-3 md:gap-x-7 md:gap-y-4 max-w-[900px] mx-auto">
           {tools.map((t, i) => (
             <RevealOnScroll key={t.name} delay={i * 0.03}>
               <span
@@ -325,7 +325,7 @@ export default function About() {
         <RevealOnScroll>
           <Rule />
         </RevealOnScroll>
-        <div className="py-24 md:py-36 max-w-[700px]">
+        <div className="py-24 md:py-36 max-w-[700px] mx-auto text-center">
           <RevealOnScroll>
             <p className="font-[family-name:var(--font-display)] italic text-[1.6rem] md:text-[2.2rem] lg:text-[2.8rem] leading-[1.25] text-[#1A1A1A]">
               I don&apos;t do &ldquo;<span className="text-[#E05252]">good enough</span>.&rdquo;

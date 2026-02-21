@@ -1,7 +1,7 @@
 "use client";
 
 const text =
-  "ZEN LAB CREATIVE — DESIGN — BRAND — WEB — CODE — SYDNEY — ";
+  "ETHAN WU — DESIGN — BRAND — WEB — CODE — SYDNEY — ";
 
 export default function Marquee() {
   const repeated = text.repeat(8);
