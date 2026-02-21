@@ -141,8 +141,8 @@ function HeroLetter({
   useEffect(() => {
     if (!mouseClientX || !mouseClientY) return;
     let rafId: number;
-    const MAX_DIST = 350;
-    const MAX_PULL = 20; // px
+    const MAX_DIST = 2000;
+    const MAX_PULL = 15; // px
 
     const update = () => {
       rafId = requestAnimationFrame(update);

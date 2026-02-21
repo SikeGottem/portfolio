@@ -18,10 +18,16 @@ export default function Nav() {
   const [wordmarkVisible, setWordmarkVisible] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
+  const [dockVisible, setDockVisible] = useState(false);
   const lastScrollY = useRef(0);
   const { scrollY } = useScroll();
 
-  // Track scroll direction for wordmark show/hide
+  // Show dock after small scroll or delay
+  useEffect(() => {
+    const timer = setTimeout(() => setDockVisible(true), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
   useMotionValueEvent(scrollY, "change", (latest) => {
     const delta = latest - lastScrollY.current;
     if (latest < 100) {
@@ -32,27 +38,21 @@ export default function Nav() {
       if (delta > 5) setWordmarkVisible(false);
       else if (delta < -5) setWordmarkVisible(true);
     }
+    if (latest > 50) setDockVisible(true);
     lastScrollY.current = latest;
   });
 
-  // Scroll-based active section tracking
   useEffect(() => {
     const ids = ["hero", "work", "about", "contact"];
-
     const handleScroll = () => {
       const scrollPos = window.scrollY + window.innerHeight * 0.35;
-
-      // Find the section whose top is closest to (but before) scrollPos
       let current = "hero";
       for (const id of ids) {
         const el = document.getElementById(id);
-        if (el && el.offsetTop <= scrollPos) {
-          current = id;
-        }
+        if (el && el.offsetTop <= scrollPos) current = id;
       }
       setActiveSection(current);
     };
-
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -62,16 +62,12 @@ export default function Nav() {
     setMenuOpen(false);
     const id = href.replace("#", "");
     const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-    }
+    if (el) el.scrollIntoView({ behavior: "smooth" });
   }, []);
-
-  const activeIndex = LINKS.findIndex((l) => l.href === `#${activeSection}`);
 
   return (
     <>
-      {/* ── Wordmark ── */}
+      {/* ── Wordmark (top-left, always) ── */}
       <motion.div
         className="fixed top-0 left-0 z-50 px-[var(--site-px)] py-5 pointer-events-none"
         initial={{ opacity: 0, y: -20 }}
@@ -89,59 +85,77 @@ export default function Nav() {
         </MagneticButton>
       </motion.div>
 
-      {/* ── Top Navigation (Desktop) ── */}
-      <nav
-        className="fixed top-0 right-0 z-50 hidden md:flex items-center gap-10 px-[var(--site-px)] py-6 pointer-events-none"
+      {/* ── Floating Dock Nav (Bottom Center, Desktop) ── */}
+      <motion.nav
+        className="fixed bottom-6 left-1/2 z-50 hidden md:flex items-center pointer-events-auto"
+        style={{ x: "-50%" }}
+        initial={{ opacity: 0, y: 40 }}
+        animate={{
+          opacity: dockVisible ? 1 : 0,
+          y: dockVisible ? 0 : 40,
+        }}
+        transition={{ duration: 0.6, ease: EASE }}
         aria-label="Section navigation"
       >
-        {LINKS.map((link) => {
-          const isActive = activeSection === link.href.replace("#", "");
-          return (
-            <a
-              key={link.label}
-              href={link.href}
-              onClick={(e) => {
-                e.preventDefault();
-                handleNavClick(link.href);
-              }}
-              className="group pointer-events-auto flex items-center gap-3 relative"
-            >
-              {/* Number */}
-              <motion.span
-                className="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.2em] transition-colors duration-300"
-                animate={{ color: isActive ? "#E05252" : "rgba(26,26,26,0.35)" }}
-              >
-                {link.num}
-              </motion.span>
-
-              {/* Label */}
-              <motion.span
-                className="font-[family-name:var(--font-space)] text-[14px] font-medium uppercase"
-                initial={false}
-                animate={{
-                  letterSpacing: isActive ? "0.25em" : "0.12em",
-                  color: isActive ? "#E05252" : "#1A1A1A",
+        <div
+          className="flex items-center gap-1 px-2 py-2 rounded-full border border-[#1A1A1A]/[0.06]"
+          style={{
+            background: "rgba(245, 242, 238, 0.7)",
+            backdropFilter: "blur(20px) saturate(1.4)",
+            WebkitBackdropFilter: "blur(20px) saturate(1.4)",
+            boxShadow: "0 4px 30px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.5)",
+          }}
+        >
+          {LINKS.map((link) => {
+            const isActive = activeSection === link.href.replace("#", "");
+            return (
+              <a
+                key={link.label}
+                href={link.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick(link.href);
                 }}
-                whileHover={{ letterSpacing: "0.25em", color: "#E05252" }}
-                transition={{ duration: 0.4, ease: EASE }}
+                className="relative group flex items-center gap-2 px-4 py-2.5 rounded-full transition-colors duration-300"
               >
-                {link.label}
-              </motion.span>
+                {/* Active pill background */}
+                {isActive && (
+                  <motion.div
+                    layoutId="activePill"
+                    className="absolute inset-0 rounded-full bg-[#1A1A1A]"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
 
-              {/* Active underline */}
-              <motion.div
-                className="absolute -bottom-1 left-0 right-0 h-[1.5px] bg-[#E05252] origin-left"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: isActive ? 1 : 0 }}
-                whileHover={{ scaleX: 1 }}
-                transition={{ duration: 0.3, ease: EASE }}
-              />
-            </a>
-          );
-        })}
-      </nav>
+                {/* Number */}
+                <motion.span
+                  className="relative z-10 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.15em] transition-colors duration-300"
+                  animate={{
+                    color: isActive ? "#E05252" : "rgba(26,26,26,0.3)",
+                  }}
+                >
+                  {link.num}
+                </motion.span>
 
-      {/* ── Scroll progress tick (top-right, subtle) ── */}
+                {/* Label */}
+                <motion.span
+                  className="relative z-10 font-[family-name:var(--font-space)] text-[12px] font-medium uppercase tracking-[0.1em] transition-colors duration-300"
+                  animate={{
+                    color: isActive ? "#F5F2EE" : "#1A1A1A",
+                  }}
+                  style={{
+                    opacity: 1,
+                  }}
+                >
+                  {link.label}
+                </motion.span>
+              </a>
+            );
+          })}
+        </div>
+      </motion.nav>
+
+      {/* ── Scroll indicator (top-right) ── */}
       {hasScrolled && (
         <motion.div
           className="fixed top-5 right-[var(--site-px)] z-50 hidden md:flex items-center gap-2 pointer-events-none"
@@ -191,7 +205,6 @@ export default function Nav() {
             exit={{ clipPath: "circle(0% at calc(100% - 2.5rem) 2.5rem)" }}
             transition={{ duration: 0.6, ease: EASE }}
           >
-            {/* Wordmark in menu */}
             <motion.span
               className="font-[family-name:var(--font-space)] text-[10px] uppercase tracking-[0.4em] text-[#F5F2EE]/30 mb-12"
               initial={{ opacity: 0, x: -20 }}
@@ -224,7 +237,6 @@ export default function Nav() {
               </motion.a>
             ))}
 
-            {/* Decorative line */}
             <motion.div
               className="mt-12 w-12 h-[1px] bg-[#E05252]/40"
               initial={{ scaleX: 0 }}
