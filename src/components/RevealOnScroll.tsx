@@ -7,12 +7,14 @@ interface RevealOnScrollProps {
   children: React.ReactNode;
   delay?: number;
   direction?: "up" | "left" | "right";
+  className?: string;
 }
 
 export default function RevealOnScroll({
   children,
   delay = 0,
   direction = "up",
+  className,
 }: RevealOnScrollProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
@@ -33,6 +35,7 @@ export default function RevealOnScroll({
   return (
     <motion.div
       ref={ref}
+      className={className}
       initial={initial}
       animate={animate}
       transition={{

@@ -8,100 +8,63 @@ import {
   useTransform,
   useAnimationControls,
 } from "framer-motion";
-import CircleBadge from "./CircleBadge";
 
-const EASE = [0.22, 1, 0.36, 1] as const;
-
-/* ── Noise field canvas — subtle generative "lab" texture ── */
-function NoiseField() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animRef = useRef<number>(0);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let w = 0;
-    let h = 0;
-    const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio, 1.5);
-      w = canvas.offsetWidth;
-      h = canvas.offsetHeight;
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
-      ctx.scale(dpr, dpr);
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    // Simple 2D noise-like dot field
-    const cols = 48;
-    const rows = 32;
-    let t = 0;
-
-    const draw = () => {
-      t += 0.003;
-      ctx.clearRect(0, 0, w, h);
-
-      const cellW = w / cols;
-      const cellH = h / rows;
-
-      for (let i = 0; i < cols; i++) {
-        for (let j = 0; j < rows; j++) {
-          const x = i * cellW + cellW / 2;
-          const y = j * cellH + cellH / 2;
-
-          // Pseudo-noise using sin combinations
-          const n =
-            Math.sin(i * 0.3 + t * 2) *
-            Math.cos(j * 0.4 + t * 1.5) *
-            Math.sin((i + j) * 0.2 + t);
-
-          const radius = Math.max(0, n * 1.8 + 0.3);
-          const alpha = Math.max(0, n * 0.12 + 0.04);
-
-          ctx.beginPath();
-          ctx.arc(x, y, radius, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(224, 82, 82, ${alpha})`;
-          ctx.fill();
-        }
-      }
-
-      animRef.current = requestAnimationFrame(draw);
-    };
-
-    animRef.current = requestAnimationFrame(draw);
-
-    return () => {
-      cancelAnimationFrame(animRef.current);
-      window.removeEventListener("resize", resize);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ opacity: 0.5 }}
-      aria-hidden="true"
-    />
-  );
+interface Ripple {
+  x: number;
+  y: number;
+  time: number;
 }
 
-/* ── Letter-by-letter reveal with hover drift ── */
+const EASE = [0.22, 1, 0.36, 1] as const;
+const RIPPLE_SPEED = 600; // px/s — must match DotGrid
+const RIPPLE_HIT_BAND = 50; // px tolerance for ring proximity
+const RIPPLE_COOLDOWN = 500; // ms before a letter can react again
+const MORPH_SYMBOLS = "αβγδφψΣΩ∞∇";
+
+/* ── Letter-by-letter reveal with hover drift + ripple reaction ── */
 function HeroLetter({
   char,
   index,
   baseDelay,
+  ripplesRef,
+  mouseClientX,
+  mouseClientY,
 }: {
   char: string;
   index: number;
   baseDelay: number;
+  ripplesRef?: React.RefObject<Ripple[]>;
+  mouseClientX?: React.RefObject<number>;
+  mouseClientY?: React.RefObject<number>;
 }) {
   const controls = useAnimationControls();
   const hasRevealed = useRef(false);
+  const letterRef = useRef<HTMLSpanElement>(null);
+  const magnetRef = useRef<HTMLSpanElement>(null);
+  const lastHitTime = useRef(0);
+  const processedRipples = useRef(new Set<number>());
+  const isSpace = char === " ";
+  const [displayedChar, setDisplayedChar] = useState(isSpace ? "\u00A0" : "φ");
+
+  /* ── Character morph: φ → random symbols → real letter ── */
+  useEffect(() => {
+    if (isSpace) return;
+    const delayMs = (baseDelay + index * 0.06) * 1000;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    timers.push(setTimeout(() => {
+      const pick = () => MORPH_SYMBOLS[Math.floor(Math.random() * MORPH_SYMBOLS.length)];
+      const r1 = pick();
+      let r2 = pick();
+      while (r2 === r1) r2 = pick();
+
+      setDisplayedChar(r1);
+      timers.push(setTimeout(() => setDisplayedChar(r2), 100));
+      timers.push(setTimeout(() => setDisplayedChar(char), 200));
+    }, delayMs));
+
+    return () => timers.forEach(clearTimeout);
+  }, [char, baseDelay, index, isSpace]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -112,8 +75,108 @@ function HeroLetter({
     return () => clearTimeout(timeout);
   }, [controls, baseDelay, index]);
 
+  /* ── RAF loop: check if any ripple ring is passing through this letter ── */
+  useEffect(() => {
+    if (!ripplesRef) return;
+    let rafId: number;
+
+    const check = () => {
+      rafId = requestAnimationFrame(check);
+      if (!hasRevealed.current || !letterRef.current) return;
+
+      const ripples = ripplesRef.current;
+      if (!ripples || ripples.length === 0) return;
+
+      const now = performance.now();
+      if (now - lastHitTime.current < RIPPLE_COOLDOWN) return;
+
+      const rect = letterRef.current.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+
+      for (const ripple of ripples) {
+        // Skip already-processed ripples for this letter
+        if (processedRipples.current.has(ripple.time)) continue;
+
+        const elapsed = (now - ripple.time) / 1000;
+        if (elapsed > 2) continue; // ripple expired
+
+        const ringRadius = elapsed * RIPPLE_SPEED;
+        // Ripple coords are relative to the DotGrid container (same as click target)
+        // We need to convert — ripple x/y are relative to the clicked container's rect
+        const parent = letterRef.current.closest('[class*="relative"]');
+        if (!parent) continue;
+        const parentRect = parent.getBoundingClientRect();
+        const rippleScreenX = parentRect.left + ripple.x;
+        const rippleScreenY = parentRect.top + ripple.y;
+
+        const dist = Math.sqrt((cx - rippleScreenX) ** 2 + (cy - rippleScreenY) ** 2);
+        const ringDist = Math.abs(dist - ringRadius);
+
+        if (ringDist < RIPPLE_HIT_BAND) {
+          lastHitTime.current = now;
+          processedRipples.current.add(ripple.time);
+          // Clean up old entries
+          if (processedRipples.current.size > 20) {
+            const entries = Array.from(processedRipples.current);
+            entries.slice(0, 10).forEach((t) => processedRipples.current.delete(t));
+          }
+
+          controls.start({
+            y: [0, -5, 0],
+            scale: [1, 1.08, 1],
+            rotate: [0, -2, 1.5, 0],
+            transition: { duration: 0.45, ease: EASE },
+          });
+          break;
+        }
+      }
+    };
+
+    rafId = requestAnimationFrame(check);
+    return () => cancelAnimationFrame(rafId);
+  }, [ripplesRef, controls]);
+
+  /* ── RAF loop: magnetic pull toward cursor ── */
+  useEffect(() => {
+    if (!mouseClientX || !mouseClientY) return;
+    let rafId: number;
+    const MAX_DIST = 350;
+    const MAX_PULL = 20; // px
+
+    const update = () => {
+      rafId = requestAnimationFrame(update);
+      const el = magnetRef.current;
+      const letter = letterRef.current;
+      if (!el || !letter) return;
+
+      const rect = letter.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const mx = mouseClientX.current;
+      const my = mouseClientY.current;
+      const dx = mx - cx;
+      const dy = my - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < MAX_DIST && dist > 0) {
+        const strength = (1 - dist / MAX_DIST) * MAX_PULL;
+        const tx = (dx / dist) * strength;
+        const ty = (dy / dist) * strength;
+        el.style.transform = `translate(${tx}px, ${ty}px)`;
+      } else {
+        el.style.transform = "translate(0px, 0px)";
+      }
+    };
+
+    rafId = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(rafId);
+  }, [mouseClientX, mouseClientY]);
+
   return (
+    <span ref={magnetRef} className="inline-block" style={{ transition: "transform 0.15s ease-out" }}>
     <motion.span
+      ref={letterRef}
       className="inline-block cursor-default select-none"
       initial={{ opacity: 0, y: 40 }}
       animate={controls}
@@ -127,8 +190,9 @@ function HeroLetter({
         });
       }}
     >
-      {char === " " ? "\u00A0" : char}
+      {displayedChar}
     </motion.span>
+    </span>
   );
 }
 
@@ -136,41 +200,105 @@ function AnimatedHeading({
   text,
   baseDelay,
   className,
+  ripplesRef,
+  mouseClientX,
+  mouseClientY,
 }: {
   text: string;
   baseDelay: number;
   className?: string;
+  ripplesRef?: React.RefObject<Ripple[]>;
+  mouseClientX?: React.RefObject<number>;
+  mouseClientY?: React.RefObject<number>;
 }) {
   return (
     <div className={className}>
       {text.split("").map((char, i) => (
-        <HeroLetter key={`${char}-${i}`} char={char} index={i} baseDelay={baseDelay} />
+        <HeroLetter key={`${char}-${i}`} char={char} index={i} baseDelay={baseDelay} ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY} />
       ))}
     </div>
   );
 }
 
-/* ── Horizontal rule that draws itself ── */
-function AnimatedRule({ delay }: { delay: number }) {
-  return (
-    <motion.div
-      className="h-px bg-[#E05252]/30 origin-left"
-      initial={{ scaleX: 0 }}
-      animate={{ scaleX: 1 }}
-      transition={{ duration: 1.2, ease: EASE, delay }}
-    />
-  );
+function useSydneyGreeting() {
+  const [greeting, setGreeting] = useState("(01) Design Studio");
+  const [time, setTime] = useState("");
+  useEffect(() => {
+    const update = () => {
+      const now = new Date();
+      const hour = parseInt(
+        now.toLocaleString("en-AU", { timeZone: "Australia/Sydney", hour: "numeric", hour12: false }),
+        10
+      );
+      if (hour >= 5 && hour < 12) setGreeting("Good morning from Sydney");
+      else if (hour >= 12 && hour < 17) setGreeting("Good afternoon from Sydney");
+      else if (hour >= 17 && hour < 21) setGreeting("Good evening from Sydney");
+      else setGreeting("Late nights in Sydney");
+      setTime(now.toLocaleString("en-AU", { timeZone: "Australia/Sydney", hour: "2-digit", minute: "2-digit", hour12: true }));
+    };
+    update();
+    const interval = setInterval(update, 60000);
+    return () => clearInterval(interval);
+  }, []);
+  return { greeting, time };
 }
 
-export default function Hero() {
+export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: React.RefObject<Ripple[]>; scrollVelocityRef?: React.RefObject<number> }) {
   const sectionRef = useRef<HTMLElement>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const { greeting, time } = useSydneyGreeting();
 
   useEffect(() => {
     const mq = window.matchMedia("(pointer: coarse)");
     setIsMobile(mq.matches);
   }, []);
 
+  /* ── Scroll velocity DOM refs ── */
+  const desktopTextRef = useRef<HTMLDivElement>(null);
+  const phiRef = useRef<HTMLDivElement>(null);
+  const metaLeftRef = useRef<HTMLSpanElement>(null);
+  const metaRightRef = useRef<HTMLSpanElement>(null);
+
+  /* ── Scroll velocity RAF loop ── */
+  useEffect(() => {
+    if (!scrollVelocityRef) return;
+    let rafId: number;
+
+    const tick = () => {
+      rafId = requestAnimationFrame(tick);
+      const v = scrollVelocityRef.current;
+
+      // Skew the desktop text container
+      if (desktopTextRef.current) {
+        const skew = v * 0.3;
+        desktopTextRef.current.style.transform = `skewY(${skew}deg)`;
+      }
+
+      // φ lags behind — shifts opposite to scroll direction
+      if (phiRef.current) {
+        const ty = -v * 0.8;
+        // Compose with existing motion style (phiX/phiY handled by framer-motion)
+        phiRef.current.style.setProperty("--scroll-ty", `${ty}px`);
+      }
+
+      // Metadata drifts with scroll
+      if (metaLeftRef.current) {
+        metaLeftRef.current.style.transform = `translateY(${v * 0.3}px)`;
+      }
+      if (metaRightRef.current) {
+        metaRightRef.current.style.transform = `translateY(${v * 0.3}px)`;
+      }
+    };
+
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, [scrollVelocityRef]);
+
+  /* ── Raw mouse position for magnetic letters ── */
+  const mouseClientX = useRef(0);
+  const mouseClientY = useRef(0);
+
+  /* ── Mouse parallax ── */
   const mouseX = useMotionValue(0.5);
   const mouseY = useMotionValue(0.5);
   const smoothX = useSpring(mouseX, { stiffness: 60, damping: 30 });
@@ -179,79 +307,188 @@ export default function Hero() {
   const headingX = useTransform(smoothX, [0, 1], [-4, 4]);
   const headingY = useTransform(smoothY, [0, 1], [-3, 3]);
 
+  const phiX = useTransform(smoothX, [0, 1], [8, -8]);
+  const phiY = useTransform(smoothY, [0, 1], [6, -6]);
+
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
       if (isMobile) return;
       const rect = sectionRef.current?.getBoundingClientRect();
       if (!rect) return;
+      mouseClientX.current = e.clientX;
+      mouseClientY.current = e.clientY;
       mouseX.set((e.clientX - rect.left) / rect.width);
       mouseY.set((e.clientY - rect.top) / rect.height);
     },
     [isMobile, mouseX, mouseY],
   );
 
+  /* ── Font classes ── */
+  const heroFont =
+    "font-[family-name:var(--font-display)] italic leading-[0.88] tracking-[-0.04em] text-[#1A1A1A]";
+  const bigSize = "text-[clamp(5rem,15vw,15rem)]";
+  const smallSize = "text-[clamp(4rem,11vw,11rem)]";
+  const monoMeta =
+    "font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.25em] text-[#777]";
+
   return (
     <section
       ref={sectionRef}
       onMouseMove={handleMouseMove}
-      className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden"
+      className="relative min-h-screen w-full flex flex-col justify-center overflow-hidden"
     >
-      {/* Generative noise field — lab aesthetic */}
-      <NoiseField />
-
-      {/* ── Main typographic composition ── */}
+      {/* ── Ghost φ (golden ratio) ── */}
       <motion.div
-        className="relative z-10 w-full flex flex-col items-center px-6"
-        style={isMobile ? {} : { x: headingX, y: headingY }}
+        ref={phiRef}
+        className="hidden md:block absolute top-1/2 -translate-y-1/2 right-[var(--site-px)] pointer-events-none select-none"
+        style={{ x: phiX, y: phiY, marginTop: "var(--scroll-ty, 0px)" }}
       >
-        {/* "Zen Lab" — the hero moment */}
-        <AnimatedHeading
-          text="Zen Lab"
-          baseDelay={0.2}
-          className="font-[family-name:var(--font-display)] italic text-[clamp(5rem,16vw,15rem)] leading-[0.88] tracking-[-0.04em] text-[#1A1A1A] text-center"
-        />
-
-        {/* Thin animated rule */}
-        <div className="w-16 sm:w-24 mt-5 mb-4">
-          <AnimatedRule delay={0.9} />
-        </div>
-
-        {/* "Creative Studio" — quiet counterpoint */}
-        <motion.span
-          className="font-[family-name:var(--font-mono)] text-[10px] sm:text-[11px] uppercase tracking-[0.25em] text-[#999] text-center"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: EASE, delay: 1.1 }}
+        <span
+          className="font-[family-name:var(--font-display)] italic text-[clamp(12rem,28vw,32rem)] leading-none text-[#1A1A1A] opacity-[0.035]"
         >
-          Creative Studio
-        </motion.span>
+          φ
+        </span>
       </motion.div>
 
-      {/* Circle badge — bottom left */}
-      <motion.div
-        className="absolute bottom-10 left-6 md:left-12 lg:left-16 hidden md:block"
+      {/* ── Scattered metadata: top-left ── */}
+      <motion.span
+        ref={metaLeftRef}
+        className={`hidden md:block absolute top-8 left-[var(--site-px)] ${monoMeta}`}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 1.4 }}
       >
-        <CircleBadge />
-      </motion.div>
+        {greeting}{time && ` · ${time}`}
+      </motion.span>
 
-      {/* Stats strip — bottom center */}
-      <motion.div
-        className="absolute bottom-6 left-0 right-0 flex items-center justify-center"
+      {/* ── Scattered metadata: top-right coordinates ── */}
+      <motion.span
+        ref={metaRightRef}
+        className={`hidden md:block absolute top-8 right-[var(--site-px)] ${monoMeta}`}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 1.6 }}
+        transition={{ duration: 0.8, delay: 1.6 }}
       >
-        {["5+ Clients", "2025 — Present", "Sydney, AU"].map((stat, i) => (
-          <div key={stat} className="flex items-center">
-            {i > 0 && <div className="w-px h-3 bg-black/10 mx-5" />}
-            <span className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] text-[#bbb] uppercase">
-              {stat}
-            </span>
+        33.87°S 151.21°E
+      </motion.span>
+
+      {/* ── Main typographic composition ── */}
+      <motion.div
+        className="relative z-10 w-full"
+        style={{ paddingLeft: "var(--site-px)", paddingRight: "var(--site-px)", ...(isMobile ? {} : { x: headingX, y: headingY }) }}
+      >
+        {/* ── MOBILE: centered stack ── */}
+        <div className="md:hidden flex flex-col items-center">
+          <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
+            text="Zen"
+            baseDelay={0.2}
+            className={`${heroFont} ${bigSize}`}
+          />
+          <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
+            text="Lab"
+            baseDelay={0.4}
+            className={`${heroFont} ${bigSize} mt-[-0.1em]`}
+          />
+          <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
+            text="Creative"
+            baseDelay={0.6}
+            className={`${heroFont} ${smallSize} mt-[-0.05em]`}
+          />
+          <motion.p
+            className="mt-8 max-w-[280px] text-center font-[family-name:var(--font-space)] text-[12px] leading-relaxed text-[#999]"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: EASE, delay: 1.1 }}
+          >
+            A one-person studio. Small by design, sharp by nature.
+          </motion.p>
+        </div>
+
+        {/* ── DESKTOP: tight stack with staircase offset ──
+             Compositional logic:
+             • Group sits at optical center (~45% from top via the parent flex-center)
+             • "Zen" left-aligned — anchors the top-left third
+             • "Lab" offset ~30% right — creates a stepping rhythm
+             • "Creative" offset ~15% right — arc between Zen & Lab
+             • Tight leading (0.88) binds the three words as one unit
+             • Ghost "01" at golden-ratio from right (~38.2% from right = 61.8% from left)
+             • Negative space on the right is intentional counterweight
+             • Description bottom-left, location bottom-right = rule-of-thirds baseline
+        ── */}
+        <div className="hidden md:block">
+          <div ref={desktopTextRef} className="inline-flex flex-col" style={{ transition: "transform 0.3s ease-out" }}>
+            {/* Zen — left edge, anchors the composition */}
+            <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
+              text="Zen"
+              baseDelay={0.2}
+              className={`${heroFont} ${bigSize}`}
+            />
+
+            {/* Lab — offset right ~30%, creating the staircase step */}
+            <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
+              text="Lab"
+              baseDelay={0.35}
+              className={`${heroFont} ${bigSize} ml-[30%] mt-[-0.12em]`}
+            />
+
+            {/* Creative — offset ~15%, sits between Zen and Lab forming an arc */}
+            <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
+              text="Creative"
+              baseDelay={0.6}
+              className={`${heroFont} ${smallSize} ml-[15%] mt-[-0.08em]`}
+            />
           </div>
-        ))}
+
+          {/* ── Bottom bar: description + studio location ── */}
+          <div className="flex justify-between items-baseline mt-12">
+            <motion.p
+              className="max-w-[360px] font-[family-name:var(--font-space)] text-[13px] leading-relaxed text-[#999]"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: EASE, delay: 1.2 }}
+            >
+              A one-person studio. Small by design, sharp by nature.
+            </motion.p>
+            <motion.span
+              className={monoMeta}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: EASE, delay: 1.3 }}
+            >
+              Studio — Sydney
+            </motion.span>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ── Scroll indicator: bottom-right ── */}
+      <motion.div
+        className="absolute bottom-8 right-[var(--site-px)] hidden md:flex flex-col items-center gap-2"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 1.5 }}
+      >
+        <motion.span
+          className={`${monoMeta} text-[#bbb]`}
+          animate={{ y: [0, 4, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          ↓
+        </motion.span>
+      </motion.div>
+
+      {/* ── Mobile scroll hint ── */}
+      <motion.div
+        className="md:hidden absolute bottom-8 left-1/2 -translate-x-1/2"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 1.2 }}
+      >
+        <motion.div
+          className="w-px h-8 bg-[#1A1A1A]/20"
+          animate={{ scaleY: [1, 0.5, 1] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        />
       </motion.div>
     </section>
   );

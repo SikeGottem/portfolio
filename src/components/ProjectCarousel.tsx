@@ -45,7 +45,7 @@ export default function ProjectCarousel() {
 
   return (
     <section className="pt-32 md:pt-44 lg:pt-56 pb-20 md:pb-28 overflow-hidden">
-      <div className="px-6 md:px-12 lg:px-16 mb-16 md:mb-24">
+      <div className="px-[var(--site-px)] mb-16 md:mb-24">
         <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.3em] text-[#bbb]">
           Showcase
         </span>

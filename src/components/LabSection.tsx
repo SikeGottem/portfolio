@@ -6,7 +6,7 @@ import RevealOnScroll from "./RevealOnScroll";
 
 export default function LabSection() {
   return (
-    <section className="relative px-6 md:px-12 lg:px-16 pt-32 md:pt-44 lg:pt-56 pb-20 md:pb-28">
+    <section className="relative px-[var(--site-px)] pt-32 md:pt-44 lg:pt-56 pb-20 md:pb-28">
       <RevealOnScroll>
         <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.3em] text-[#bbb] mb-2">
           Lab

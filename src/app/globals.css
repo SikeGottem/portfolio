@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Site-wide content padding — design-optimized */
+:root {
+  --site-px: clamp(1.5rem, 5vw, 6rem);
+}
+
 @custom-variant pointer-fine (@media (pointer: fine));
 
 @theme {

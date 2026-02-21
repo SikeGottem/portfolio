@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Instrument_Serif, Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
+import { Instrument_Serif, Space_Grotesk, Inter, JetBrains_Mono, Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
 import NoiseTexture from "@/components/NoiseTexture";
 import ScrollProgress from "@/components/ScrollProgress";
@@ -25,6 +25,13 @@ const inter = Inter({
   display: "swap",
 });
 
+const notoSerifSC = Noto_Serif_SC({
+  subsets: ["latin"],
+  variable: "--font-cn",
+  display: "swap",
+  weight: "700",
+});
+
 const jetbrains = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
@@ -41,7 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${instrument.variable} ${spaceGrotesk.variable} ${inter.variable} ${jetbrains.variable}`}
+      className={`${instrument.variable} ${spaceGrotesk.variable} ${inter.variable} ${jetbrains.variable} ${notoSerifSC.variable}`}
     >
       <body className="font-[family-name:var(--font-inter)]">
         <NoiseTexture />

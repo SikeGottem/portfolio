@@ -4,7 +4,7 @@ import MagneticButton from "./MagneticButton";
 
 export default function Nav() {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-start justify-between px-6 md:px-12 lg:px-16 py-5 pointer-events-none bg-[#F5F2EE]/90 backdrop-blur-md">
+    <nav className="fixed top-0 left-0 right-0 z-50 flex items-start justify-between px-[var(--site-px)] py-5 pointer-events-none bg-[#F5F2EE]/90 backdrop-blur-md">
       <MagneticButton
         href="/"
         className="font-[family-name:var(--font-space)] text-sm font-medium uppercase tracking-[0.25em] text-[#1A1A1A] pointer-events-auto"
