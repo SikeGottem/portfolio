@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useMotionValueEvent, useScroll } from "framer-
 import MagneticButton from "./MagneticButton";
 
 const LINKS = [
+  { label: "Home", href: "#hero", num: "00" },
   { label: "Work", href: "#work", num: "01" },
   { label: "About", href: "#about", num: "02" },
   { label: "Contact", href: "#contact", num: "03" },
@@ -34,25 +35,27 @@ export default function Nav() {
     lastScrollY.current = latest;
   });
 
-  // Intersection observer for active section
+  // Scroll-based active section tracking
   useEffect(() => {
-    const ids = ["work", "about", "contact"];
-    const observers: IntersectionObserver[] = [];
+    const ids = ["hero", "work", "about", "contact"];
 
-    ids.forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const obs = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) setActiveSection(id);
-        },
-        { threshold: 0.3, rootMargin: "-20% 0px -40% 0px" }
-      );
-      obs.observe(el);
-      observers.push(obs);
-    });
+    const handleScroll = () => {
+      const scrollPos = window.scrollY + window.innerHeight * 0.35;
 
-    return () => observers.forEach((o) => o.disconnect());
+      // Find the section whose top is closest to (but before) scrollPos
+      let current = "hero";
+      for (const id of ids) {
+        const el = document.getElementById(id);
+        if (el && el.offsetTop <= scrollPos) {
+          current = id;
+        }
+      }
+      setActiveSection(current);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleNavClick = useCallback((href: string) => {
@@ -86,26 +89,11 @@ export default function Nav() {
         </MagneticButton>
       </motion.div>
 
-      {/* ── Side Navigation (Desktop) ── */}
+      {/* ── Top Navigation (Desktop) ── */}
       <nav
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-50 hidden md:flex flex-col items-end pr-[var(--site-px)] gap-1 pointer-events-none"
+        className="fixed top-0 right-0 z-50 hidden md:flex items-center gap-10 px-[var(--site-px)] py-6 pointer-events-none"
         aria-label="Section navigation"
       >
-        {/* Active indicator line */}
-        <div className="absolute right-[var(--site-px)] top-0 h-full flex flex-col justify-center">
-          <div className="relative h-[calc(3*2.5rem+2*0.25rem)]">
-            {activeIndex >= 0 && (
-              <motion.div
-                className="absolute right-0 w-[2px] h-8 bg-[#E05252]"
-                initial={false}
-                animate={{ y: activeIndex * (2.5 * 16 + 0.25 * 16) }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                style={{ top: "0.25rem" }}
-              />
-            )}
-          </div>
-        </div>
-
         {LINKS.map((link) => {
           const isActive = activeSection === link.href.replace("#", "");
           return (
@@ -116,37 +104,37 @@ export default function Nav() {
                 e.preventDefault();
                 handleNavClick(link.href);
               }}
-              className="group pointer-events-auto flex items-center gap-3 h-10 pr-3 relative"
+              className="group pointer-events-auto flex items-center gap-3 relative"
             >
               {/* Number */}
               <motion.span
-                className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.2em] text-[#1A1A1A]/40 transition-colors duration-300 group-hover:text-[#E05252]"
-                animate={{ color: isActive ? "#E05252" : undefined }}
+                className="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.2em] transition-colors duration-300"
+                animate={{ color: isActive ? "#E05252" : "rgba(26,26,26,0.35)" }}
               >
                 {link.num}
               </motion.span>
 
               {/* Label */}
               <motion.span
-                className="font-[family-name:var(--font-space)] text-[11px] font-medium uppercase overflow-hidden"
+                className="font-[family-name:var(--font-space)] text-[14px] font-medium uppercase"
                 initial={false}
                 animate={{
-                  letterSpacing: isActive ? "0.3em" : "0.12em",
+                  letterSpacing: isActive ? "0.25em" : "0.12em",
                   color: isActive ? "#E05252" : "#1A1A1A",
                 }}
-                whileHover={{ letterSpacing: "0.3em", color: "#E05252" }}
+                whileHover={{ letterSpacing: "0.25em", color: "#E05252" }}
                 transition={{ duration: 0.4, ease: EASE }}
               >
                 {link.label}
               </motion.span>
 
-              {/* Hover dot */}
-              <motion.span
-                className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-[#E05252]"
-                initial={{ scale: 0 }}
-                whileHover={{ scale: 1 }}
-                animate={{ scale: isActive ? 1 : 0 }}
-                transition={{ duration: 0.2 }}
+              {/* Active underline */}
+              <motion.div
+                className="absolute -bottom-1 left-0 right-0 h-[1.5px] bg-[#E05252] origin-left"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: isActive ? 1 : 0 }}
+                whileHover={{ scaleX: 1 }}
+                transition={{ duration: 0.3, ease: EASE }}
               />
             </a>
           );

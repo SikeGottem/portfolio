@@ -63,6 +63,10 @@ body {
   color: transparent !important;
   -webkit-text-stroke: 1.5px #1A1A1A;
 }
+.hero-stroke-text.hero-tagline {
+  color: transparent !important;
+  -webkit-text-stroke: 0.8px rgba(26, 26, 26, 0.3);
+}
 
 /* Hide default cursor on desktop */
 @media (pointer: fine) {

@@ -418,28 +418,38 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
              • Words flow diagonally across the viewport using the full width
         ── */}
         <div className="hidden md:block">
-          <div ref={desktopTextRef} className="relative" style={{ transition: "transform 0.3s ease-out", height: "clamp(28rem, 60vh, 44rem)" }}>
-            {/* Ethan — small contextual label, top-left */}
-            <div className="absolute top-0 left-0">
+          <div ref={desktopTextRef} className="relative" style={{ transition: "transform 0.3s ease-out", height: "clamp(22rem, 50vh, 36rem)" }}>
+            {/* Ethan — outline/stroke, top-left */}
+            <div className="absolute top-0 left-0 hero-stroke-text">
               <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
                 text="Ethan"
                 baseDelay={0.2}
-                className={`${heroFont} text-[clamp(1.8rem,5vw,5rem)]`}
+                className="font-[family-name:var(--font-display)] italic leading-[0.88] tracking-[-0.04em] text-[clamp(5rem,12vw,13rem)]"
               />
             </div>
 
-            {/* Wu — HERO, massive solid fill, center-bottom */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2">
+            {/* Wu — solid fill, bottom-right */}
+            <div className="absolute bottom-[4%] right-[3%]">
               <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
                 text="Wu"
                 baseDelay={0.4}
-                className={`${heroFont} text-[clamp(14rem,45vw,50rem)] whitespace-nowrap`}
+                className={`${heroFont} text-[clamp(8rem,18vw,20rem)]`}
               />
             </div>
           </div>
 
         </div>
       </motion.div>
+
+      {/* ── Tagline — display font, bottom-left above footer text ── */}
+      <motion.p
+        className="absolute bottom-28 left-[var(--site-px)] z-10 font-[family-name:var(--font-display)] italic text-[clamp(1.2rem,2.5vw,2.2rem)] leading-[1.2] hero-stroke-text hero-tagline"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, ease: EASE, delay: 1.0 }}
+      >
+        If it&apos;s not remarkable, why bother?
+      </motion.p>
 
       {/* ── Bottom bar: pinned to section bottom corners, matching top metadata padding ── */}
       <motion.p

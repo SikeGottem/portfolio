@@ -167,7 +167,7 @@ export default function About() {
         </div>
 
         {/* Two-column blurb */}
-        <div className="mt-20 md:mt-32 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 max-w-[900px] mx-auto">
+        <div className="mt-20 md:mt-32 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 max-w-[1100px] mx-auto">
           <RevealOnScroll>
             <p className="font-[family-name:var(--font-inter)] text-[15px] leading-[1.9] text-[#555]">
               I run Ethan Wu out of Sydney. No account managers, no
@@ -218,7 +218,7 @@ export default function About() {
 
       {/* ── BEAT 3 · THE FACTS (stat grid) ── */}
       <div className="px-[var(--site-px)] pb-32 md:pb-48">
-        <div className="max-w-[800px] mx-auto">
+        <div className="max-w-[1000px] mx-auto">
           <RevealOnScroll>
             <div className="flex items-center gap-3 mb-16 md:mb-24">
               <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.3em] text-[#bbb]">
@@ -269,7 +269,7 @@ export default function About() {
 
       {/* ── BEAT 4 · SERVICES (list, not cards) ── */}
       <div className="px-[var(--site-px)] pt-32 md:pt-44 pb-32 md:pb-48">
-        <div className="max-w-[900px] mx-auto">
+        <div className="max-w-[1100px] mx-auto">
           <RevealOnScroll>
             <div className="flex items-center gap-3 mb-12 md:mb-16">
               <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.3em] text-[#bbb]">
@@ -291,7 +291,7 @@ export default function About() {
 
       {/* ── BEAT 5 · TOOLS (weighted cloud) ── */}
       <div className="px-[var(--site-px)] pt-32 md:pt-44 pb-36 md:pb-52">
-        <div className="max-w-[900px] mx-auto">
+        <div className="max-w-[1100px] mx-auto">
           <RevealOnScroll>
             <div className="flex items-center gap-3 mb-12 md:mb-16">
               <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.3em] text-[#bbb]">
