@@ -109,8 +109,10 @@ export default function CustomCursor() {
       pos.current = { x: e.clientX, y: e.clientY };
       visible.current = true;
 
-      // Draw ink stroke — drippy with dynamic thickness, no splattering
-      if (ctx && visible.current) {
+      // Draw ink stroke — only in hero section (first viewport)
+      const heroEl = document.getElementById("hero");
+      const heroBottom = heroEl ? heroEl.getBoundingClientRect().bottom + window.scrollY : window.innerHeight;
+      if (ctx && visible.current && iy < heroBottom) {
         const dx = ix - prevPos.current.x;
         const dy = iy - prevPos.current.y;
         const speed = Math.sqrt(dx * dx + dy * dy);

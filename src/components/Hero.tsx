@@ -326,13 +326,14 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
   /* ── Font classes ── */
   const heroFont =
     "font-[family-name:var(--font-display)] italic leading-[0.88] tracking-[-0.04em] text-[#1A1A1A]";
-  const bigSize = "text-[clamp(5rem,15vw,15rem)]";
-  const smallSize = "text-[clamp(4rem,11vw,11rem)]";
+  const bigSize = "text-[clamp(5rem,15vw,15rem)]"; // used for mobile
+  const smallSize = "text-[clamp(4rem,11vw,11rem)]"; // used for mobile
   const monoMeta =
     "font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.25em] text-[#777]";
 
   return (
     <section
+      id="hero"
       ref={sectionRef}
       onMouseMove={handleMouseMove}
       className="relative min-h-screen w-full flex flex-col justify-center overflow-hidden"
@@ -415,32 +416,44 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
              • Negative space on the right is intentional counterweight
              • Description bottom-left, location bottom-right = rule-of-thirds baseline
         ── */}
+        {/* ── DESKTOP: dynamic diagonal spread across full viewport ──
+             • "Zen" — massive, top-left, anchors the eye
+             • "Lab" — outline/stroke only, center-right, creates depth
+             • "Creative" — medium, bottom-right, completes the diagonal
+             • Words flow diagonally across the viewport using the full width
+        ── */}
         <div className="hidden md:block">
-          <div ref={desktopTextRef} className="inline-flex flex-col" style={{ transition: "transform 0.3s ease-out" }}>
-            {/* Zen — left edge, anchors the composition */}
-            <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
-              text="Zen"
-              baseDelay={0.2}
-              className={`${heroFont} ${bigSize}`}
-            />
+          <div ref={desktopTextRef} className="relative" style={{ transition: "transform 0.3s ease-out", height: "clamp(22rem, 50vh, 36rem)" }}>
+            {/* Zen — massive, top-left anchor */}
+            <div className="absolute top-0 left-0">
+              <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
+                text="Zen"
+                baseDelay={0.2}
+                className={`${heroFont} text-[clamp(7rem,20vw,22rem)]`}
+              />
+            </div>
 
-            {/* Lab — offset right ~30%, creating the staircase step */}
-            <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
-              text="Lab"
-              baseDelay={0.35}
-              className={`${heroFont} ${bigSize} ml-[30%] mt-[-0.12em]`}
-            />
+            {/* Lab — outline/stroke only, center-right, overlaps slightly */}
+            <div className="absolute top-[35%] right-[5%] hero-stroke-text">
+              <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
+                text="Lab"
+                baseDelay={0.4}
+                className="font-[family-name:var(--font-display)] italic leading-[0.88] tracking-[-0.04em] text-[clamp(7rem,18vw,20rem)]"
+              />
+            </div>
 
-            {/* Creative — offset ~15%, sits between Zen and Lab forming an arc */}
-            <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
-              text="Creative"
-              baseDelay={0.6}
-              className={`${heroFont} ${smallSize} ml-[15%] mt-[-0.08em]`}
-            />
+            {/* Creative — bottom, offset right, solid fill */}
+            <div className="absolute bottom-0 left-[30%]">
+              <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
+                text="Creative"
+                baseDelay={0.6}
+                className={`${heroFont} text-[clamp(4rem,10vw,10rem)]`}
+              />
+            </div>
           </div>
 
           {/* ── Bottom bar: description + studio location ── */}
-          <div className="flex justify-between items-baseline mt-12">
+          <div className="flex justify-between items-baseline mt-8">
             <motion.p
               className="max-w-[360px] font-[family-name:var(--font-space)] text-[13px] leading-relaxed text-[#999]"
               initial={{ opacity: 0, y: 12 }}

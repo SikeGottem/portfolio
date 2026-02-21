@@ -58,6 +58,12 @@ body {
   animation: spin-slow 20s linear infinite;
 }
 
+/* Hero stroke-only text effect */
+.hero-stroke-text .inline-block {
+  color: transparent !important;
+  -webkit-text-stroke: 1.5px #1A1A1A;
+}
+
 /* Hide default cursor on desktop */
 @media (pointer: fine) {
   * { cursor: none !important; }
