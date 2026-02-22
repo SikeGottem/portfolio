@@ -4,6 +4,7 @@ import "./globals.css";
 import NoiseTexture from "@/components/NoiseTexture";
 import ScrollProgress from "@/components/ScrollProgress";
 import CustomCursor from "@/components/CustomCursor";
+import { InkBlobCursor } from "@/components/InkBlobCursor";
 
 const instrument = Instrument_Serif({
   subsets: ["latin"],
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <NoiseTexture />
         <ScrollProgress />
         <CustomCursor />
+        <InkBlobCursor />
         {children}
       </body>
     </html>
