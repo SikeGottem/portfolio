@@ -52,14 +52,15 @@ export default function WorkItem({
         />
       </div>
 
+      {/* Accent flood — full width, behind everything */}
+      <motion.div
+        className="absolute inset-0 z-0"
+        style={{ backgroundColor: accent }}
+        animate={{ opacity: isHovered ? 1 : 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      />
+
       <div className="px-[var(--site-px)] relative">
-        {/* Accent flood */}
-        <motion.div
-          className="absolute inset-0 z-0"
-          style={{ backgroundColor: accent }}
-          animate={{ opacity: isHovered ? 1 : 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        />
 
         {/* Floating image card */}
         {project.previewImage && (
