@@ -59,8 +59,7 @@ export default function WorkItem({
           {/* ── Ghost number — massive, creative position ── */}
           <span
             className="
-              absolute -left-8 md:left-auto md:-right-12 lg:-right-16
-              -top-8 md:top-auto md:bottom-0
+              absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2
               font-[family-name:var(--font-display)] italic
               text-[14rem] md:text-[20rem] lg:text-[26rem] leading-none
               text-black/[0.025] select-none pointer-events-none
@@ -71,25 +70,7 @@ export default function WorkItem({
             {num}
           </span>
 
-          {/* ── Ghost preview image — faint background texture ── */}
-          {project.previewImage && (
-            <div
-              className="
-                absolute inset-0 hidden md:flex items-center justify-end
-                pointer-events-none select-none pr-[10%]
-              "
-            >
-              <div className="relative w-[500px] h-[350px] opacity-[0.035] group-hover:opacity-[0.06] transition-opacity duration-1000 rounded-lg overflow-hidden">
-                <Image
-                  src={project.previewImage}
-                  alt=""
-                  fill
-                  className="object-cover grayscale"
-                  sizes="500px"
-                />
-              </div>
-            </div>
-          )}
+          {/* Ghost preview removed — clashed with ghost numbers */}
 
           {/* ── Content stack ── */}
           <div className="relative z-10">
@@ -110,7 +91,7 @@ export default function WorkItem({
             <h3
               className="
                 font-[family-name:var(--font-display)] italic
-                text-[clamp(3rem,8vw,7rem)] leading-[0.88] tracking-[-0.03em]
+                text-[clamp(1.4rem,3vw,2.8rem)] leading-[0.95] tracking-[-0.01em]
                 text-[#1A1A1A]
                 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]
                 group-hover:translate-x-3 md:group-hover:translate-x-8
