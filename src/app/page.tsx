@@ -13,6 +13,7 @@ import About from "@/components/About";
 import Contact from "@/components/Contact";
 import FloatingElements from "@/components/FloatingElements";
 import DotGrid from "@/components/DotGrid";
+// import MetaballCursor from "@/components/MetaballCursor";
 import HorizontalRule from "@/components/HorizontalRule";
 import ProjectCarousel from "@/components/ProjectCarousel";
 
@@ -55,6 +56,7 @@ export default function Home() {
       <main>
         <div className="relative" onClick={isMobile ? undefined : handleClick}>
           {!isMobile && <DotGrid ripplesRef={ripplesRef} scrollVelocityRef={scrollVelocityRef} />}
+          {/* {!isMobile && <MetaballCursor />} */}
           <Hero ripplesRef={ripplesRef} scrollVelocityRef={scrollVelocityRef} />
           {!isMobile && <FloatingElements />}
         </div>
