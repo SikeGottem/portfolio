@@ -227,14 +227,19 @@ function HeroLetter({
         el.style.transform = "translate(0px, 0px)";
       }
 
-      // Per-letter ink fill — opacity based on proximity
+      // Per-letter ink fill — clip-path circle centered on cursor relative to letter
       if (inkRef.current) {
         if (dist < INK_RADIUS && dist > 0) {
           const fill = 1 - dist / INK_RADIUS;
-          // Ease the fill for a smoother look
-          const eased = fill * fill; // quadratic ease-in
-          inkRef.current.style.opacity = `${eased}`;
+          const eased = fill * fill;
+          const radius = eased * 120; // max circle radius in px
+          // Cursor position relative to the letter element
+          const relX = mx - rect.left;
+          const relY = my - rect.top;
+          inkRef.current.style.clipPath = `circle(${radius}px at ${relX}px ${relY}px)`;
+          inkRef.current.style.opacity = "1";
         } else {
+          inkRef.current.style.clipPath = "circle(0px at 50% 50%)";
           inkRef.current.style.opacity = "0";
         }
       }
@@ -280,7 +285,7 @@ function HeroLetter({
       <span
         ref={inkRef}
         className="absolute inset-0 text-[#1A1A1A] pointer-events-none"
-        style={{ opacity: 0, WebkitTextStroke: "0px", transition: "opacity 0.15s ease-out" }}
+        style={{ opacity: 0, WebkitTextStroke: "0px", clipPath: "circle(0px at 50% 50%)", transition: "clip-path 0.12s ease-out, opacity 0.12s ease-out" }}
         aria-hidden="true"
       >
         {displayedChar}
