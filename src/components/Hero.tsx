@@ -194,11 +194,14 @@ function HeroLetter({
     return () => cancelAnimationFrame(rafId);
   }, [ripplesRef, controls, isMobile]);
 
+  const inkRef = useRef<HTMLSpanElement>(null);
+
   useEffect(() => {
     if (!mouseClientX || !mouseClientY || isMobile) return;
     let rafId: number;
     const MAX_DIST = 300;
     const MAX_PULL = 12;
+    const INK_RADIUS = 200;
 
     const update = () => {
       rafId = requestAnimationFrame(update);
@@ -222,6 +225,18 @@ function HeroLetter({
         el.style.transform = `translate(${tx}px, ${ty}px)`;
       } else {
         el.style.transform = "translate(0px, 0px)";
+      }
+
+      // Per-letter ink fill — opacity based on proximity
+      if (inkRef.current) {
+        if (dist < INK_RADIUS && dist > 0) {
+          const fill = 1 - dist / INK_RADIUS;
+          // Ease the fill for a smoother look
+          const eased = fill * fill; // quadratic ease-in
+          inkRef.current.style.opacity = `${eased}`;
+        } else {
+          inkRef.current.style.opacity = "0";
+        }
       }
     };
 
@@ -247,7 +262,7 @@ function HeroLetter({
     <span ref={magnetRef} className="inline-block" style={{ transition: "transform 0.15s ease-out" }}>
     <motion.span
       ref={letterRef}
-      className="inline-block cursor-default select-none"
+      className="inline-block cursor-default select-none relative"
       initial={{ opacity: 0, y: 40 }}
       animate={controls}
       transition={{ duration: 0.8, ease: EASE }}
@@ -261,6 +276,15 @@ function HeroLetter({
       }}
     >
       {displayedChar}
+      {/* Ink fill — solid version, opacity controlled by cursor proximity */}
+      <span
+        ref={inkRef}
+        className="absolute inset-0 text-[#1A1A1A] pointer-events-none"
+        style={{ opacity: 0, WebkitTextStroke: "0px", transition: "opacity 0.15s ease-out" }}
+        aria-hidden="true"
+      >
+        {displayedChar}
+      </span>
     </motion.span>
     </span>
   );
@@ -329,10 +353,6 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
   const isMobile = useIsMobile();
   const { greeting, time } = useSydneyGreeting();
 
-  /* ── Ink blob refs ── */
-  const inkBlobRef = useRef<HTMLDivElement>(null);
-  const ethanContainerRef = useRef<HTMLDivElement>(null);
-
   /* ── Scroll velocity DOM refs ── */
   const desktopTextRef = useRef<HTMLDivElement>(null);
   const phiRef = useRef<HTMLDivElement>(null);
@@ -377,41 +397,6 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
   }, [scrollVelocityRef, isMobile]);
-
-  /* ── Ink blob RAF loop ── */
-  useEffect(() => {
-    if (isMobile) return;
-    const INK_MAX_RADIUS = 180;
-    const INK_RANGE = 400;
-    let rafId: number;
-
-    const update = () => {
-      rafId = requestAnimationFrame(update);
-      const container = ethanContainerRef.current;
-      const blob = inkBlobRef.current;
-      if (!container || !blob) return;
-
-      const rect = container.getBoundingClientRect();
-      const mx = mouseClientX.current;
-      const my = mouseClientY.current;
-      const relX = mx - rect.left;
-      const relY = my - rect.top;
-      const pctX = (relX / rect.width) * 100;
-      const pctY = (relY / rect.height) * 100;
-
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const dist = Math.sqrt((mx - cx) ** 2 + (my - cy) ** 2);
-      const radius = dist < INK_RANGE ? INK_MAX_RADIUS * (1 - dist / INK_RANGE) : 0;
-
-      blob.style.setProperty("--ink-x", `${pctX}%`);
-      blob.style.setProperty("--ink-y", `${pctY}%`);
-      blob.style.setProperty("--ink-r", `${radius}px`);
-    };
-
-    rafId = requestAnimationFrame(update);
-    return () => cancelAnimationFrame(rafId);
-  }, [isMobile]);
 
   /* ── Raw mouse position for magnetic letters (desktop only) ── */
   const mouseClientX = useRef(0);
@@ -540,23 +525,14 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
         {/* ── DESKTOP ── */}
         <div className="hidden md:block">
           <div ref={desktopTextRef} className="relative" style={{ transition: "transform 0.3s ease-out", height: "clamp(24rem, 55vh, 42rem)" }}>
-            {/* Ethan — outline/stroke, top-left, with ink blob */}
+            {/* Ethan — outline/stroke, top-left, per-letter ink fill on cursor proximity */}
             <motion.div style={{ x: ethanX, y: ethanY, scale: mergeScale }}>
-              <div ref={ethanContainerRef} className="absolute top-0 left-0 hero-stroke-text ink-blob-container">
+              <div className="absolute top-0 left-0 hero-stroke-text">
                 <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY} isMobile={isMobile}
                   text="Ethan"
                   baseDelay={0.2}
                   className="font-[family-name:var(--font-display)] italic leading-[0.88] tracking-[-0.04em] text-[clamp(5rem,14vw,18rem)]"
                 />
-                {/* Ink blob fill layer */}
-                <div
-                  ref={inkBlobRef}
-                  className="ink-blob-fill"
-                >
-                  <div className="font-[family-name:var(--font-display)] italic leading-[0.88] tracking-[-0.04em] text-[clamp(5rem,14vw,18rem)] text-[#1A1A1A]">
-                    Ethan
-                  </div>
-                </div>
               </div>
             </motion.div>
 
