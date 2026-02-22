@@ -6,58 +6,58 @@ import Image from "next/image";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import type { Project } from "@/lib/projects";
 
-/* ── Layout configs — cycling pattern for scattered placement ── */
+/* ── Layout configs — clean staggered zigzag ── */
 const layoutConfigs = [
   {
     align: "left" as const,
-    marginLeft: "5%",
+    marginLeft: "10%",
     marginRight: "auto",
-    maxWidth: "65%",
+    maxWidth: "60%",
     titleSize: "clamp(1.8rem,4vw,3.4rem)",
     ghostLeft: "0%",
-    ghostTop: "-15%",
+    ghostTop: "-5%",
     ghostTranslateX: "-10%",
-    paddingTop: "12rem",
-    paddingBottom: "8rem",
+    paddingTop: "8rem",
+    paddingBottom: "6rem",
     hoverRotate: 1.5,
   },
   {
     align: "right" as const,
     marginLeft: "auto",
-    marginRight: "5%",
+    marginRight: "10%",
     maxWidth: "60%",
-    titleSize: "clamp(1.5rem,3.2vw,2.8rem)",
-    ghostLeft: "75%",
-    ghostTop: "10%",
+    titleSize: "clamp(1.6rem,3.5vw,3rem)",
+    ghostLeft: "65%",
+    ghostTop: "0%",
     ghostTranslateX: "-50%",
     paddingTop: "6rem",
-    paddingBottom: "14rem",
+    paddingBottom: "8rem",
     hoverRotate: -1,
   },
   {
     align: "left" as const,
-    marginLeft: "22%",
+    marginLeft: "10%",
     marginRight: "auto",
-    maxWidth: "55%",
-    titleSize: "clamp(1.4rem,2.8vw,2.5rem)",
-    ghostLeft: "60%",
-    ghostTop: "-25%",
+    maxWidth: "60%",
+    titleSize: "clamp(1.6rem,3.5vw,3rem)",
+    ghostLeft: "55%",
+    ghostTop: "-5%",
     ghostTranslateX: "-50%",
-    paddingTop: "10rem",
+    paddingTop: "8rem",
     paddingBottom: "6rem",
     hoverRotate: 2,
   },
   {
     align: "right" as const,
     marginLeft: "auto",
-    marginRight: "20%",
-    maxWidth: "50%",
-    titleSize: "clamp(1.3rem,2.6vw,2.4rem)",
-    ghostLeft: "10%",
-    ghostTop: "20%",
+    marginRight: "10%",
+    maxWidth: "60%",
+    titleSize: "clamp(1.6rem,3.5vw,3rem)",
+    ghostLeft: "5%",
+    ghostTop: "0%",
     ghostTranslateX: "0%",
-    paddingTop: "5rem",
-    paddingBottom: "12rem",
+    paddingTop: "6rem",
+    paddingBottom: "8rem",
     hoverRotate: -1.5,
   },
 ];
@@ -110,7 +110,7 @@ export default function WorkItem({
 
       <div className="px-[var(--site-px)]">
         <motion.div
-          className="relative overflow-visible"
+          className="relative overflow-hidden"
           style={{
             marginLeft: config.marginLeft,
             marginRight: config.marginRight,
@@ -121,15 +121,15 @@ export default function WorkItem({
           whileHover={{ rotate: config.hoverRotate }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         >
-          {/* ── Ghost number — MASSIVE, creative position ── */}
+          {/* ── Ghost number — big but contained ── */}
           <span
             className="
               absolute pointer-events-none select-none
               font-[family-name:var(--font-display)] italic
-              text-[16rem] md:text-[22rem] lg:text-[30rem] leading-none
-              text-black/[0.02]
+              text-[10rem] md:text-[14rem] lg:text-[18rem] leading-none
+              text-black/[0.025]
               transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)]
-              group-hover:text-[#E05252]/[0.05] group-hover:scale-110
+              group-hover:text-[#E05252]/[0.06] group-hover:scale-110
             "
             style={{
               left: config.ghostLeft,
