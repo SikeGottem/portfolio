@@ -284,8 +284,8 @@ function HeroLetter({
       {/* Ink fill — solid version, opacity controlled by cursor proximity */}
       <span
         ref={inkRef}
-        className="absolute inset-0 text-[#1A1A1A] pointer-events-none"
-        style={{ opacity: 0, WebkitTextStroke: "0px", clipPath: "circle(0px at 50% 50%)", transition: "clip-path 0.12s ease-out, opacity 0.12s ease-out" }}
+        className="absolute inset-0 ink-fill-letter pointer-events-none"
+        style={{ opacity: 0, clipPath: "circle(0px at 50% 50%)", transition: "clip-path 0.12s ease-out, opacity 0.12s ease-out" }}
         aria-hidden="true"
       >
         {displayedChar}
@@ -533,8 +533,8 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
         <div className="hidden md:block">
           <div ref={desktopTextRef} className="relative" style={{ transition: "transform 0.3s ease-out", height: "clamp(24rem, 55vh, 42rem)" }}>
             {/* Ethan — outline/stroke, top-left, per-letter ink fill on cursor proximity */}
-            <motion.div style={{ x: ethanX, y: ethanY, scale: mergeScale }}>
-              <div className="absolute top-0 left-0 hero-stroke-text">
+            <motion.div className="absolute top-0 left-0" style={{ x: ethanX, y: ethanY, scale: mergeScale }}>
+              <div className="hero-stroke-text">
                 <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY} isMobile={isMobile}
                   text="Ethan"
                   baseDelay={0.2}
@@ -544,8 +544,8 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
             </motion.div>
 
             {/* Wu — solid fill, bottom-right */}
-            <motion.div style={{ x: wuX, y: wuY, scale: mergeScale }}>
-              <div className="absolute bottom-[4%] right-[3%]">
+            <motion.div className="absolute bottom-[4%] right-[3%]" style={{ x: wuX, y: wuY, scale: mergeScale }}>
+              <div>
                 <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY} isMobile={isMobile}
                   text="Wu"
                   baseDelay={0.4}
