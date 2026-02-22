@@ -391,13 +391,29 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
             className={`${heroFont} ${bigSize} mt-[-0.1em]`}
           />
           <motion.p
-            className="mt-8 max-w-[280px] text-center font-[family-name:var(--font-space)] text-[12px] leading-relaxed text-[#999]"
+            className="mt-6 max-w-[280px] text-center font-[family-name:var(--font-display)] italic text-[clamp(1.1rem,5vw,1.5rem)] leading-[1.2] hero-stroke-text hero-tagline"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: EASE, delay: 1.0 }}
+          >
+            If it&apos;s not remarkable, why bother?
+          </motion.p>
+          <motion.p
+            className="mt-6 max-w-[280px] text-center font-[family-name:var(--font-space)] text-[12px] leading-relaxed text-[#999]"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: EASE, delay: 1.1 }}
           >
             A one-person studio. Small by design, sharp by nature.
           </motion.p>
+          <motion.span
+            className={`mt-4 ${monoMeta}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 1.3 }}
+          >
+            Studio — Sydney
+          </motion.span>
         </div>
 
         {/* ── DESKTOP: tight stack with staircase offset ──
@@ -441,9 +457,9 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
         </div>
       </motion.div>
 
-      {/* ── Tagline — display font, bottom-left above footer text ── */}
+      {/* ── Tagline — display font, bottom-left above footer text (desktop only) ── */}
       <motion.p
-        className="absolute bottom-28 left-[var(--site-px)] z-10 font-[family-name:var(--font-display)] italic text-[clamp(1.5rem,3.5vw,3rem)] leading-[1.2] hero-stroke-text hero-tagline"
+        className="hidden md:block absolute bottom-28 left-[var(--site-px)] z-10 font-[family-name:var(--font-display)] italic text-[clamp(1.5rem,3.5vw,3rem)] leading-[1.2] hero-stroke-text hero-tagline"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, ease: EASE, delay: 1.0 }}
@@ -451,9 +467,9 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
         If it&apos;s not remarkable, why bother?
       </motion.p>
 
-      {/* ── Bottom bar: pinned to section bottom corners, matching top metadata padding ── */}
+      {/* ── Bottom bar: pinned to section bottom corners, matching top metadata padding (desktop only) ── */}
       <motion.p
-        className="absolute bottom-16 left-[var(--site-px)] max-w-[360px] font-[family-name:var(--font-space)] text-[13px] leading-relaxed text-[#999] z-10"
+        className="hidden md:block absolute bottom-16 left-[var(--site-px)] max-w-[360px] font-[family-name:var(--font-space)] text-[13px] leading-relaxed text-[#999] z-10"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: EASE, delay: 1.2 }}
@@ -461,7 +477,7 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
         A one-person studio. Small by design, sharp by nature.
       </motion.p>
       <motion.span
-        className={`absolute bottom-16 right-[var(--site-px)] ${monoMeta} z-10`}
+        className={`hidden md:inline absolute bottom-16 right-[var(--site-px)] ${monoMeta} z-10`}
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: EASE, delay: 1.3 }}
