@@ -48,17 +48,18 @@ export default function Nav() {
 
   useEffect(() => {
     const ids = ["hero", "work", "about", "contact"];
+    let rafId: number | null = null;
+    let ticking = false;
 
-    const handleScroll = () => {
+    const computeScroll = () => {
+      ticking = false;
       const scrollPos = window.scrollY + window.innerHeight * 0.35;
 
-      // Get section offsets
       const offsets = ids.map((id) => {
         const el = document.getElementById(id);
         return el ? el.offsetTop : 0;
       });
 
-      // Find which two sections we're between and interpolate
       let current = "hero";
       let progress = 0;
 
@@ -77,9 +78,19 @@ export default function Nav() {
       setOnDarkBg(current === "contact");
     };
 
-    handleScroll();
+    const handleScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        rafId = requestAnimationFrame(computeScroll);
+      }
+    };
+
+    computeScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   const handleNavClick = useCallback((href: string) => {
@@ -118,7 +129,7 @@ export default function Nav() {
     };
 
     updatePill();
-  });
+  }, [scrollProgress]);
 
   return (
     <>

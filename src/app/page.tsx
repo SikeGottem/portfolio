@@ -2,6 +2,7 @@
 
 import { useRef, useCallback } from "react";
 import { useScrollVelocity } from "@/hooks/useScrollVelocity";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import SmoothScroll from "@/components/SmoothScroll";
 import Marquee from "@/components/Marquee";
 import Nav from "@/components/Nav";
@@ -18,6 +19,7 @@ import ProjectCarousel from "@/components/ProjectCarousel";
 export default function Home() {
   const ripplesRef = useRef<{ x: number; y: number; time: number }[]>([]);
   const scrollVelocityRef = useScrollVelocity();
+  const isMobile = useIsMobile();
 
   // Lazy AudioContext for subtle click sound
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -36,6 +38,7 @@ export default function Home() {
   }, []);
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (isMobile) return;
     const rect = e.currentTarget.getBoundingClientRect();
     ripplesRef.current.push({
       x: e.clientX - rect.left,
@@ -43,17 +46,17 @@ export default function Home() {
       time: performance.now(),
     });
     playClick();
-  }, [playClick]);
+  }, [playClick, isMobile]);
 
   return (
     <SmoothScroll>
       <Marquee />
       <Nav />
       <main>
-        <div className="relative" onClick={handleClick}>
-          <DotGrid ripplesRef={ripplesRef} scrollVelocityRef={scrollVelocityRef} />
+        <div className="relative" onClick={isMobile ? undefined : handleClick}>
+          {!isMobile && <DotGrid ripplesRef={ripplesRef} scrollVelocityRef={scrollVelocityRef} />}
           <Hero ripplesRef={ripplesRef} scrollVelocityRef={scrollVelocityRef} />
-          <FloatingElements />
+          {!isMobile && <FloatingElements />}
         </div>
         
         <WorkSection />

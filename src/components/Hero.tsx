@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useRef, useEffect, useCallback, useState, useMemo } from "react";
 import {
   motion,
   useMotionValue,
@@ -8,6 +8,7 @@ import {
   useTransform,
   useAnimationControls,
 } from "framer-motion";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface Ripple {
   x: number;
@@ -16,9 +17,9 @@ interface Ripple {
 }
 
 const EASE = [0.22, 1, 0.36, 1] as const;
-const RIPPLE_SPEED = 600; // px/s — must match DotGrid
-const RIPPLE_HIT_BAND = 50; // px tolerance for ring proximity
-const RIPPLE_COOLDOWN = 500; // ms before a letter can react again
+const RIPPLE_SPEED = 600;
+const RIPPLE_HIT_BAND = 50;
+const RIPPLE_COOLDOWN = 500;
 const MORPH_SYMBOLS = "αβγδφψΣΩ∞∇";
 
 /* ── Letter-by-letter reveal with hover drift + ripple reaction ── */
@@ -29,6 +30,7 @@ function HeroLetter({
   ripplesRef,
   mouseClientX,
   mouseClientY,
+  isMobile,
 }: {
   char: string;
   index: number;
@@ -36,6 +38,7 @@ function HeroLetter({
   ripplesRef?: React.RefObject<Ripple[]>;
   mouseClientX?: React.RefObject<number>;
   mouseClientY?: React.RefObject<number>;
+  isMobile: boolean;
 }) {
   const controls = useAnimationControls();
   const hasRevealed = useRef(false);
@@ -44,11 +47,11 @@ function HeroLetter({
   const lastHitTime = useRef(0);
   const processedRipples = useRef(new Set<number>());
   const isSpace = char === " ";
-  const [displayedChar, setDisplayedChar] = useState(isSpace ? "\u00A0" : "φ");
+  const [displayedChar, setDisplayedChar] = useState(isSpace ? "\u00A0" : isMobile ? char : "φ");
 
-  /* ── Character morph: φ → random symbols → real letter ── */
+  /* ── Character morph: φ → random symbols → real letter (desktop only) ── */
   useEffect(() => {
-    if (isSpace) return;
+    if (isSpace || isMobile) return;
     const delayMs = (baseDelay + index * 0.06) * 1000;
     const timers: ReturnType<typeof setTimeout>[] = [];
 
@@ -64,7 +67,7 @@ function HeroLetter({
     }, delayMs));
 
     return () => timers.forEach(clearTimeout);
-  }, [char, baseDelay, index, isSpace]);
+  }, [char, baseDelay, index, isSpace, isMobile]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -75,9 +78,9 @@ function HeroLetter({
     return () => clearTimeout(timeout);
   }, [controls, baseDelay, index]);
 
-  /* ── RAF loop: check if any ripple ring is passing through this letter ── */
+  /* ── RAF loop: check if any ripple ring is passing through this letter (desktop only) ── */
   useEffect(() => {
-    if (!ripplesRef) return;
+    if (!ripplesRef || isMobile) return;
     let rafId: number;
 
     const check = () => {
@@ -95,15 +98,12 @@ function HeroLetter({
       const cy = rect.top + rect.height / 2;
 
       for (const ripple of ripples) {
-        // Skip already-processed ripples for this letter
         if (processedRipples.current.has(ripple.time)) continue;
 
         const elapsed = (now - ripple.time) / 1000;
-        if (elapsed > 2) continue; // ripple expired
+        if (elapsed > 2) continue;
 
         const ringRadius = elapsed * RIPPLE_SPEED;
-        // Ripple coords are relative to the DotGrid container (same as click target)
-        // We need to convert — ripple x/y are relative to the clicked container's rect
         const parent = letterRef.current.closest('[class*="relative"]');
         if (!parent) continue;
         const parentRect = parent.getBoundingClientRect();
@@ -116,7 +116,6 @@ function HeroLetter({
         if (ringDist < RIPPLE_HIT_BAND) {
           lastHitTime.current = now;
           processedRipples.current.add(ripple.time);
-          // Clean up old entries
           if (processedRipples.current.size > 20) {
             const entries = Array.from(processedRipples.current);
             entries.slice(0, 10).forEach((t) => processedRipples.current.delete(t));
@@ -135,14 +134,14 @@ function HeroLetter({
 
     rafId = requestAnimationFrame(check);
     return () => cancelAnimationFrame(rafId);
-  }, [ripplesRef, controls]);
+  }, [ripplesRef, controls, isMobile]);
 
-  /* ── RAF loop: magnetic pull toward cursor ── */
+  /* ── RAF loop: magnetic pull toward cursor (desktop only, reduced MAX_DIST) ── */
   useEffect(() => {
-    if (!mouseClientX || !mouseClientY) return;
+    if (!mouseClientX || !mouseClientY || isMobile) return;
     let rafId: number;
-    const MAX_DIST = 2000;
-    const MAX_PULL = 15; // px
+    const MAX_DIST = 300; // reduced from 2000
+    const MAX_PULL = 12;
 
     const update = () => {
       rafId = requestAnimationFrame(update);
@@ -171,7 +170,22 @@ function HeroLetter({
 
     rafId = requestAnimationFrame(update);
     return () => cancelAnimationFrame(rafId);
-  }, [mouseClientX, mouseClientY]);
+  }, [mouseClientX, mouseClientY, isMobile]);
+
+  if (isMobile) {
+    // Simplified mobile render — no magnetic wrapper, no hover
+    return (
+      <motion.span
+        ref={letterRef}
+        className="inline-block cursor-default select-none"
+        initial={{ opacity: 0, y: 30 }}
+        animate={controls}
+        transition={{ duration: 0.6, ease: EASE }}
+      >
+        {displayedChar}
+      </motion.span>
+    );
+  }
 
   return (
     <span ref={magnetRef} className="inline-block" style={{ transition: "transform 0.15s ease-out" }}>
@@ -203,6 +217,7 @@ function AnimatedHeading({
   ripplesRef,
   mouseClientX,
   mouseClientY,
+  isMobile,
 }: {
   text: string;
   baseDelay: number;
@@ -210,11 +225,21 @@ function AnimatedHeading({
   ripplesRef?: React.RefObject<Ripple[]>;
   mouseClientX?: React.RefObject<number>;
   mouseClientY?: React.RefObject<number>;
+  isMobile: boolean;
 }) {
   return (
     <div className={className}>
       {text.split("").map((char, i) => (
-        <HeroLetter key={`${char}-${i}`} char={char} index={i} baseDelay={baseDelay} ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY} />
+        <HeroLetter
+          key={`${char}-${i}`}
+          char={char}
+          index={i}
+          baseDelay={baseDelay}
+          ripplesRef={isMobile ? undefined : ripplesRef}
+          mouseClientX={isMobile ? undefined : mouseClientX}
+          mouseClientY={isMobile ? undefined : mouseClientY}
+          isMobile={isMobile}
+        />
       ))}
     </div>
   );
@@ -245,13 +270,8 @@ function useSydneyGreeting() {
 
 export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: React.RefObject<Ripple[]>; scrollVelocityRef?: React.RefObject<number> }) {
   const sectionRef = useRef<HTMLElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
   const { greeting, time } = useSydneyGreeting();
-
-  useEffect(() => {
-    const mq = window.matchMedia("(pointer: coarse)");
-    setIsMobile(mq.matches);
-  }, []);
 
   /* ── Scroll velocity DOM refs ── */
   const desktopTextRef = useRef<HTMLDivElement>(null);
@@ -259,29 +279,21 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
   const metaLeftRef = useRef<HTMLSpanElement>(null);
   const metaRightRef = useRef<HTMLSpanElement>(null);
 
-  /* ── Scroll velocity RAF loop ── */
+  /* ── Scroll velocity RAF loop (desktop only) ── */
   useEffect(() => {
-    if (!scrollVelocityRef) return;
+    if (!scrollVelocityRef || isMobile) return;
     let rafId: number;
 
     const tick = () => {
       rafId = requestAnimationFrame(tick);
       const v = scrollVelocityRef.current;
 
-      // Skew the desktop text container
       if (desktopTextRef.current) {
-        const skew = v * 0.3;
-        desktopTextRef.current.style.transform = `skewY(${skew}deg)`;
+        desktopTextRef.current.style.transform = `skewY(${v * 0.3}deg)`;
       }
-
-      // φ lags behind — shifts opposite to scroll direction
       if (phiRef.current) {
-        const ty = -v * 0.8;
-        // Compose with existing motion style (phiX/phiY handled by framer-motion)
-        phiRef.current.style.setProperty("--scroll-ty", `${ty}px`);
+        phiRef.current.style.setProperty("--scroll-ty", `${-v * 0.8}px`);
       }
-
-      // Metadata drifts with scroll
       if (metaLeftRef.current) {
         metaLeftRef.current.style.transform = `translateY(${v * 0.3}px)`;
       }
@@ -292,13 +304,13 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
 
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, [scrollVelocityRef]);
+  }, [scrollVelocityRef, isMobile]);
 
-  /* ── Raw mouse position for magnetic letters ── */
+  /* ── Raw mouse position for magnetic letters (desktop only) ── */
   const mouseClientX = useRef(0);
   const mouseClientY = useRef(0);
 
-  /* ── Mouse parallax ── */
+  /* ── Mouse parallax (desktop only) ── */
   const mouseX = useMotionValue(0.5);
   const mouseY = useMotionValue(0.5);
   const smoothX = useSpring(mouseX, { stiffness: 60, damping: 30 });
@@ -326,8 +338,8 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
   /* ── Font classes ── */
   const heroFont =
     "font-[family-name:var(--font-display)] italic leading-[0.88] tracking-[-0.04em] text-[#1A1A1A]";
-  const bigSize = "text-[clamp(5rem,15vw,15rem)]"; // used for mobile
-  const smallSize = "text-[clamp(4rem,11vw,11rem)]"; // used for mobile
+  const bigSize = "text-[clamp(5rem,15vw,15rem)]";
+  const smallSize = "text-[clamp(4rem,11vw,11rem)]";
   const monoMeta =
     "font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.25em] text-[#777]";
 
@@ -335,21 +347,23 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
     <section
       id="hero"
       ref={sectionRef}
-      onMouseMove={handleMouseMove}
+      onMouseMove={isMobile ? undefined : handleMouseMove}
       className="relative min-h-screen w-full flex flex-col justify-center overflow-hidden"
     >
-      {/* ── Ghost φ (golden ratio) ── */}
-      <motion.div
-        ref={phiRef}
-        className="hidden md:block absolute top-1/2 -translate-y-1/2 right-[var(--site-px)] pointer-events-none select-none"
-        style={{ x: phiX, y: phiY, marginTop: "var(--scroll-ty, 0px)" }}
-      >
-        <span
-          className="font-[family-name:var(--font-display)] italic text-[clamp(12rem,28vw,32rem)] leading-none text-[#1A1A1A] opacity-[0.035]"
+      {/* ── Ghost φ (golden ratio) — desktop only ── */}
+      {!isMobile && (
+        <motion.div
+          ref={phiRef}
+          className="hidden md:block absolute top-1/2 -translate-y-1/2 right-[var(--site-px)] pointer-events-none select-none"
+          style={{ x: phiX, y: phiY, marginTop: "var(--scroll-ty, 0px)" }}
         >
-          φ
-        </span>
-      </motion.div>
+          <span
+            className="font-[family-name:var(--font-display)] italic text-[clamp(12rem,28vw,32rem)] leading-none text-[#1A1A1A] opacity-[0.035]"
+          >
+            φ
+          </span>
+        </motion.div>
+      )}
 
       {/* ── Scattered metadata: top-left ── */}
       <motion.span
@@ -380,12 +394,12 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
       >
         {/* ── MOBILE: centered stack ── */}
         <div className="md:hidden flex flex-col items-center">
-          <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
+          <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY} isMobile={isMobile}
             text="Ethan"
             baseDelay={0.2}
             className={`${heroFont} ${bigSize}`}
           />
-          <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
+          <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY} isMobile={isMobile}
             text="Wu"
             baseDelay={0.4}
             className={`${heroFont} ${bigSize} mt-[-0.1em]`}
@@ -416,28 +430,12 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
           </motion.span>
         </div>
 
-        {/* ── DESKTOP: tight stack with staircase offset ──
-             Compositional logic:
-             • Group sits at optical center (~45% from top via the parent flex-center)
-             • "Zen" left-aligned — anchors the top-left third
-             • "Lab" offset ~30% right — creates a stepping rhythm
-             • "Creative" offset ~15% right — arc between Zen & Lab
-             • Tight leading (0.88) binds the three words as one unit
-             • Ghost "01" at golden-ratio from right (~38.2% from right = 61.8% from left)
-             • Negative space on the right is intentional counterweight
-             • Description bottom-left, location bottom-right = rule-of-thirds baseline
-        ── */}
-        {/* ── DESKTOP: dynamic diagonal spread across full viewport ──
-             • "Zen" — massive, top-left, anchors the eye
-             • "Lab" — outline/stroke only, center-right, creates depth
-             • "Creative" — medium, bottom-right, completes the diagonal
-             • Words flow diagonally across the viewport using the full width
-        ── */}
+        {/* ── DESKTOP ── */}
         <div className="hidden md:block">
           <div ref={desktopTextRef} className="relative" style={{ transition: "transform 0.3s ease-out", height: "clamp(22rem, 50vh, 36rem)" }}>
             {/* Ethan — outline/stroke, top-left */}
             <div className="absolute top-0 left-0 hero-stroke-text">
-              <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
+              <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY} isMobile={isMobile}
                 text="Ethan"
                 baseDelay={0.2}
                 className="font-[family-name:var(--font-display)] italic leading-[0.88] tracking-[-0.04em] text-[clamp(5rem,12vw,13rem)]"
@@ -446,18 +444,17 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
 
             {/* Wu — solid fill, bottom-right */}
             <div className="absolute bottom-[4%] right-[3%]">
-              <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY}
+              <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY} isMobile={isMobile}
                 text="Wu"
                 baseDelay={0.4}
                 className={`${heroFont} text-[clamp(8rem,18vw,20rem)]`}
               />
             </div>
           </div>
-
         </div>
       </motion.div>
 
-      {/* ── Tagline — display font, bottom-left above footer text (desktop only) ── */}
+      {/* ── Tagline — desktop only ── */}
       <motion.p
         className="hidden md:block absolute bottom-28 left-[var(--site-px)] z-10 font-[family-name:var(--font-display)] italic text-[clamp(1.5rem,3.5vw,3rem)] leading-[1.2] hero-stroke-text hero-tagline"
         initial={{ opacity: 0, y: 16 }}
@@ -467,7 +464,7 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
         If it&apos;s not remarkable, why bother?
       </motion.p>
 
-      {/* ── Bottom bar: pinned to section bottom corners, matching top metadata padding (desktop only) ── */}
+      {/* ── Bottom bar — desktop only ── */}
       <motion.p
         className="hidden md:block absolute bottom-16 left-[var(--site-px)] max-w-[360px] font-[family-name:var(--font-space)] text-[13px] leading-relaxed text-[#999] z-10"
         initial={{ opacity: 0, y: 12 }}
