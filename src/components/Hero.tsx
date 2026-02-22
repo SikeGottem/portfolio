@@ -365,11 +365,13 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
     offset: ["start start", "end start"],
   });
 
-  const ethanX = useTransform(scrollYProgress, [0, 0.6], ["0%", "35%"]);
-  const ethanY = useTransform(scrollYProgress, [0, 0.6], ["0%", "80%"]);
-  const wuX = useTransform(scrollYProgress, [0, 0.6], ["0%", "-55%"]);
-  const wuY = useTransform(scrollYProgress, [0, 0.6], ["0%", "-60%"]);
-  const mergeScale = useTransform(scrollYProgress, [0, 0.6], [1, 0.85]);
+  // Ethan starts top-left, Wu starts bottom-right — converge to center
+  // Using vw/vh for predictable movement regardless of text size
+  const ethanX = useTransform(scrollYProgress, [0, 0.5], ["0vw", "18vw"]);
+  const ethanY = useTransform(scrollYProgress, [0, 0.5], ["0vh", "12vh"]);
+  const wuX = useTransform(scrollYProgress, [0, 0.5], ["0vw", "-22vw"]);
+  const wuY = useTransform(scrollYProgress, [0, 0.5], ["0vh", "-10vh"]);
+  const mergeScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.9]);
 
   /* ── Scroll velocity RAF loop (desktop only) ── */
   useEffect(() => {
