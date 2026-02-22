@@ -443,7 +443,7 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
 
       {/* ── Tagline — display font, bottom-left above footer text ── */}
       <motion.p
-        className="absolute bottom-28 left-[var(--site-px)] z-10 font-[family-name:var(--font-display)] italic text-[clamp(1.2rem,2.5vw,2.2rem)] leading-[1.2] hero-stroke-text hero-tagline"
+        className="absolute bottom-28 left-[var(--site-px)] z-10 font-[family-name:var(--font-display)] italic text-[clamp(1.5rem,3.5vw,3rem)] leading-[1.2] hero-stroke-text hero-tagline"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, ease: EASE, delay: 1.0 }}
