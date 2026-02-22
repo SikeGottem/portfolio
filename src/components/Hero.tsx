@@ -432,13 +432,13 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
 
         {/* ── DESKTOP ── */}
         <div className="hidden md:block">
-          <div ref={desktopTextRef} className="relative" style={{ transition: "transform 0.3s ease-out", height: "clamp(22rem, 50vh, 36rem)" }}>
+          <div ref={desktopTextRef} className="relative" style={{ transition: "transform 0.3s ease-out", height: "clamp(24rem, 55vh, 42rem)" }}>
             {/* Ethan — outline/stroke, top-left */}
             <div className="absolute top-0 left-0 hero-stroke-text">
               <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY} isMobile={isMobile}
                 text="Ethan"
                 baseDelay={0.2}
-                className="font-[family-name:var(--font-display)] italic leading-[0.88] tracking-[-0.04em] text-[clamp(5rem,12vw,13rem)]"
+                className="font-[family-name:var(--font-display)] italic leading-[0.88] tracking-[-0.04em] text-[clamp(5rem,14vw,18rem)]"
               />
             </div>
 
@@ -447,7 +447,7 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
               <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY} isMobile={isMobile}
                 text="Wu"
                 baseDelay={0.4}
-                className={`${heroFont} text-[clamp(8rem,18vw,20rem)]`}
+                className={`${heroFont} text-[clamp(8rem,22vw,28rem)]`}
               />
             </div>
           </div>
