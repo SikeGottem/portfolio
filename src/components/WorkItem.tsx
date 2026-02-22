@@ -47,13 +47,13 @@ export default function WorkItem({
       onMouseMove={handleMouseMove}
     >
       <div className="px-[var(--site-px)]">
-        <div className="border-b border-black/[0.06] py-16 md:py-28 lg:py-36 relative overflow-hidden">
-          {/* ── Ghost number — large background element ── */}
+        <div className="py-40 md:py-56 lg:py-64 relative overflow-hidden">
+          {/* ── Ghost number — massive background element ── */}
           <span
             className="
               absolute -right-4 md:right-8 top-1/2 -translate-y-1/2
               font-[family-name:var(--font-display)] italic
-              text-[6rem] md:text-[8rem] lg:text-[10rem] leading-none
+              text-[10rem] md:text-[14rem] lg:text-[18rem] leading-none
               text-black/[0.03] select-none pointer-events-none
               transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]
               group-hover:text-[#E05252]/[0.06] group-hover:scale-110
@@ -62,13 +62,13 @@ export default function WorkItem({
             {num}
           </span>
 
-          {/* ── Main row ── */}
-          <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-0 relative z-10">
-            {/* Number */}
+          {/* ── Content stack ── */}
+          <div className="relative z-10">
+            {/* Numbered label */}
             <span
               className="
                 font-[family-name:var(--font-mono)] text-[11px] text-[#ccc]
-                md:w-20 flex-shrink-0
+                block mb-6
                 transition-all duration-600
                 group-hover:text-[#E05252]
               "
@@ -76,28 +76,42 @@ export default function WorkItem({
               {num}
             </span>
 
-            {/* Title — dominant element */}
-            <h3
-              className="
-                font-[family-name:var(--font-display)] italic
-                text-[clamp(1.8rem,4vw,3.5rem)] leading-[0.95] tracking-[-0.02em]
-                text-[#1A1A1A]
-                transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]
-                group-hover:translate-x-3 md:group-hover:translate-x-8
-                group-hover:text-[#1A1A1A]
-                flex-1
-              "
-            >
-              {project.name}
-            </h3>
+            {/* Title — full-width, dominant */}
+            <div className="flex items-start justify-between gap-8">
+              <h3
+                className="
+                  font-[family-name:var(--font-display)] italic
+                  text-[clamp(2.5rem,6vw,5.5rem)] leading-[0.92] tracking-[-0.03em]
+                  text-[#1A1A1A]
+                  transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]
+                  group-hover:translate-x-3 md:group-hover:translate-x-8
+                "
+              >
+                {project.name}
+              </h3>
 
-            {/* Right side — meta */}
+              {/* Arrow */}
+              <span
+                className="
+                  hidden md:inline-flex items-center justify-center flex-shrink-0
+                  w-12 h-12 rounded-full border border-black/[0.08]
+                  text-[#ccc] text-base mt-2
+                  transition-all duration-600
+                  group-hover:border-[#E05252] group-hover:text-white
+                  group-hover:bg-[#E05252] group-hover:scale-110
+                  group-hover:rotate-45
+                "
+              >
+                ↗
+              </span>
+            </div>
+
+            {/* Metadata row — tags + year, below title */}
             <div
               className="
-                flex items-center gap-6 md:ml-auto
+                flex flex-wrap items-center gap-4 mt-8
                 transition-all duration-600
                 opacity-50 group-hover:opacity-100
-                group-hover:-translate-x-2
               "
             >
               {/* Tags */}
@@ -122,37 +136,22 @@ export default function WorkItem({
               <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#bbb] tabular-nums">
                 {project.year}
               </span>
+            </div>
 
-              {/* Arrow */}
-              <span
+            {/* ── Description — reveals on hover (desktop) / always visible (mobile) ── */}
+            <div className="mt-4 overflow-hidden">
+              <p
                 className="
-                  hidden md:inline-flex items-center justify-center
-                  w-10 h-10 rounded-full border border-black/[0.08]
-                  text-[#ccc] text-sm
-                  transition-all duration-600
-                  group-hover:border-[#E05252] group-hover:text-white
-                  group-hover:bg-[#E05252] group-hover:scale-110
-                  group-hover:rotate-45
+                  font-[family-name:var(--font-inter)] text-[13px] leading-[1.7] text-[#999] max-w-lg
+                  md:max-h-0 md:opacity-0 md:translate-y-4
+                  md:transition-all md:duration-600 md:ease-[cubic-bezier(0.22,1,0.36,1)]
+                  md:group-hover:max-h-24 md:group-hover:opacity-100 md:group-hover:translate-y-0
+                  md:group-hover:mt-6
                 "
               >
-                ↗
-              </span>
+                {project.description}
+              </p>
             </div>
-          </div>
-
-          {/* ── Description — reveals on hover (desktop) / always visible (mobile) ── */}
-          <div className="md:pl-20 mt-4 md:mt-0 overflow-hidden relative z-10">
-            <p
-              className="
-                font-[family-name:var(--font-inter)] text-[13px] leading-[1.7] text-[#999] max-w-lg
-                md:max-h-0 md:opacity-0 md:translate-y-4
-                md:transition-all md:duration-600 md:ease-[cubic-bezier(0.22,1,0.36,1)]
-                md:group-hover:max-h-24 md:group-hover:opacity-100 md:group-hover:translate-y-0
-                md:group-hover:mt-5
-              "
-            >
-              {project.description}
-            </p>
           </div>
         </div>
       </div>
@@ -189,7 +188,6 @@ export default function WorkItem({
             className="object-cover"
             sizes="420px"
           />
-          {/* Overlay gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
         </motion.div>
       )}
