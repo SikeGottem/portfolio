@@ -6,6 +6,62 @@ import Image from "next/image";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import type { Project } from "@/lib/projects";
 
+/* ── Layout configs — cycling pattern for scattered placement ── */
+const layoutConfigs = [
+  {
+    align: "left" as const,
+    marginLeft: "5%",
+    marginRight: "auto",
+    maxWidth: "65%",
+    titleSize: "clamp(1.8rem,4vw,3.4rem)",
+    ghostLeft: "0%",
+    ghostTop: "-15%",
+    ghostTranslateX: "-10%",
+    paddingTop: "12rem",
+    paddingBottom: "8rem",
+    hoverRotate: 1.5,
+  },
+  {
+    align: "right" as const,
+    marginLeft: "auto",
+    marginRight: "5%",
+    maxWidth: "60%",
+    titleSize: "clamp(1.5rem,3.2vw,2.8rem)",
+    ghostLeft: "75%",
+    ghostTop: "10%",
+    ghostTranslateX: "-50%",
+    paddingTop: "6rem",
+    paddingBottom: "14rem",
+    hoverRotate: -1,
+  },
+  {
+    align: "left" as const,
+    marginLeft: "22%",
+    marginRight: "auto",
+    maxWidth: "55%",
+    titleSize: "clamp(1.4rem,2.8vw,2.5rem)",
+    ghostLeft: "60%",
+    ghostTop: "-25%",
+    ghostTranslateX: "-50%",
+    paddingTop: "10rem",
+    paddingBottom: "6rem",
+    hoverRotate: 2,
+  },
+  {
+    align: "right" as const,
+    marginLeft: "auto",
+    marginRight: "20%",
+    maxWidth: "50%",
+    titleSize: "clamp(1.3rem,2.6vw,2.4rem)",
+    ghostLeft: "10%",
+    ghostTop: "20%",
+    ghostTranslateX: "0%",
+    paddingTop: "5rem",
+    paddingBottom: "12rem",
+    hoverRotate: -1.5,
+  },
+];
+
 export default function WorkItem({
   project,
   index,
@@ -18,7 +74,6 @@ export default function WorkItem({
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLAnchorElement>(null);
 
-  /* ── Mouse-follow image position ── */
   const rawX = useMotionValue(0);
   const rawY = useMotionValue(0);
   const x = useSpring(rawX, { stiffness: 150, damping: 25 });
@@ -35,8 +90,7 @@ export default function WorkItem({
   );
 
   const num = index.toString().padStart(2, "0");
-
-  /* Pick first 2 tags max, truncate to short form */
+  const config = layoutConfigs[(index - 1) % layoutConfigs.length];
   const minimalTags = project.tags.slice(0, 2);
 
   return (
@@ -51,57 +105,70 @@ export default function WorkItem({
     >
       {/* ── Separator line ── */}
       <div className="px-[var(--site-px)]">
-        <div className="border-t border-black/[0.08]" />
+        <div className="border-t border-black/[0.06]" />
       </div>
 
       <div className="px-[var(--site-px)]">
-        <div className="py-56 md:py-72 lg:py-80 relative overflow-hidden">
-          {/* ── Ghost number — massive, creative position ── */}
+        <motion.div
+          className="relative overflow-visible"
+          style={{
+            marginLeft: config.marginLeft,
+            marginRight: config.marginRight,
+            maxWidth: config.maxWidth,
+            paddingTop: config.paddingTop,
+            paddingBottom: config.paddingBottom,
+          }}
+          whileHover={{ rotate: config.hoverRotate }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {/* ── Ghost number — MASSIVE, creative position ── */}
           <span
             className="
-              absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2
+              absolute pointer-events-none select-none
               font-[family-name:var(--font-display)] italic
-              text-[14rem] md:text-[20rem] lg:text-[26rem] leading-none
-              text-black/[0.025] select-none pointer-events-none
+              text-[16rem] md:text-[22rem] lg:text-[30rem] leading-none
+              text-black/[0.02]
               transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)]
-              group-hover:text-[#E05252]/[0.06] group-hover:scale-105
+              group-hover:text-[#E05252]/[0.05] group-hover:scale-110
             "
+            style={{
+              left: config.ghostLeft,
+              top: config.ghostTop,
+              transform: `translateX(${config.ghostTranslateX})`,
+            }}
           >
             {num}
           </span>
 
-          {/* Ghost preview removed — clashed with ghost numbers */}
-
-          {/* ── Content stack ── */}
+          {/* ── Content ── */}
           <div className="relative z-10">
-            {/* Year — whisper-quiet */}
-            <span
-              className="
-                font-[family-name:var(--font-mono)] text-[10px] text-black/20
-                tracking-[0.3em] uppercase
-                block mb-10
-                transition-colors duration-600
-                group-hover:text-[#E05252]/40
-              "
-            >
-              {project.year}
-            </span>
+            {/* Number + Year row */}
+            <div className="flex items-center gap-4 mb-6">
+              <span className="font-[family-name:var(--font-mono)] text-[10px] text-black/15 tracking-[0.3em] uppercase transition-colors duration-600 group-hover:text-[#E05252]/40">
+                {num}
+              </span>
+              <span className="w-6 h-px bg-black/10" />
+              <span className="font-[family-name:var(--font-mono)] text-[10px] text-black/15 tracking-[0.3em] uppercase transition-colors duration-600 group-hover:text-[#E05252]/40">
+                {project.year}
+              </span>
+            </div>
 
-            {/* Title — THE hero, massive and breathing */}
+            {/* Title */}
             <h3
               className="
                 font-[family-name:var(--font-display)] italic
-                text-[clamp(1.4rem,3vw,2.8rem)] leading-[0.95] tracking-[-0.01em]
+                leading-[0.95] tracking-[-0.01em]
                 text-[#1A1A1A]
                 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]
-                group-hover:translate-x-3 md:group-hover:translate-x-8
+                group-hover:translate-x-3 md:group-hover:translate-x-6
               "
+              style={{ fontSize: config.titleSize }}
             >
               {project.name}
             </h3>
 
-            {/* Tags — minimal whisper, well below title */}
-            <div className="mt-10 flex items-center gap-4">
+            {/* Tags */}
+            <div className="mt-6 flex items-center gap-4">
               {minimalTags.map((tag) => (
                 <span
                   key={tag}
@@ -109,19 +176,17 @@ export default function WorkItem({
                     font-[family-name:var(--font-mono)] text-[9px]
                     uppercase tracking-[0.25em] text-black/20
                     transition-colors duration-600
-                    group-hover:text-black/35
+                    group-hover:text-black/40
                   "
                 >
                   {tag}
                 </span>
               ))}
-
-              {/* Arrow — inline, subtle */}
               <span
                 className="
                   hidden md:inline-flex items-center justify-center flex-shrink-0
-                  w-8 h-8 rounded-full border border-black/[0.06]
-                  text-black/20 text-xs ml-auto
+                  w-7 h-7 rounded-full border border-black/[0.06]
+                  text-black/20 text-[10px] ml-auto
                   transition-all duration-600
                   group-hover:border-[#E05252] group-hover:text-white
                   group-hover:bg-[#E05252] group-hover:scale-110
@@ -132,10 +197,10 @@ export default function WorkItem({
               </span>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
-      {/* ── Hover preview image — follows cursor, LARGER ── */}
+      {/* ── Hover preview image — follows cursor ── */}
       {project.previewImage && (
         <motion.div
           className="
