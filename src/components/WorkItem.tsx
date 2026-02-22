@@ -52,7 +52,7 @@ export default function WorkItem({
         />
       </div>
 
-      <div className="px-[var(--site-px)] relative overflow-hidden">
+      <div className="px-[var(--site-px)] relative">
         {/* Accent flood */}
         <motion.div
           className="absolute inset-0 z-0"
@@ -64,7 +64,7 @@ export default function WorkItem({
         {/* Floating image card */}
         {project.previewImage && (
           <motion.div
-            className="hidden lg:block absolute top-1/2 z-20 w-[280px] h-[320px] rounded-lg shadow-2xl overflow-hidden pointer-events-none"
+            className="hidden lg:block absolute top-1/2 z-30 w-[320px] rounded-lg shadow-2xl pointer-events-none"
             style={{
               right: config.imageRight,
               left: config.imageLeft,
@@ -74,21 +74,23 @@ export default function WorkItem({
             animate={{
               opacity: isHovered ? 1 : 0,
               scale: isHovered ? 1 : 0.85,
+              y: isHovered ? "-50%" : "-40%",
             }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
             <Image
               src={project.previewImage}
               alt={project.name}
-              fill
-              className="object-cover"
-              sizes="280px"
+              width={1440}
+              height={900}
+              className="w-full h-auto rounded-lg"
+              sizes="320px"
             />
           </motion.div>
         )}
 
         <motion.div
-          className="relative z-10 overflow-hidden"
+          className="relative z-10"
           style={{
             marginLeft: config.marginLeft,
             marginRight: config.marginRight,
