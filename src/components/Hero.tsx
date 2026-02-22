@@ -7,6 +7,7 @@ import {
   useSpring,
   useTransform,
   useAnimationControls,
+  useScroll,
 } from "framer-motion";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
@@ -21,6 +22,65 @@ const RIPPLE_SPEED = 600;
 const RIPPLE_HIT_BAND = 50;
 const RIPPLE_COOLDOWN = 500;
 const MORPH_SYMBOLS = "αβγδφψΣΩ∞∇";
+
+/* ── TypewriterTagline ── */
+function TypewriterTagline({ delay = 0 }: { delay?: number }) {
+  const fullText = "If it's not remarkable, why bother?";
+  const [charCount, setCharCount] = useState(0);
+  const [showCursor, setShowCursor] = useState(true);
+
+  useEffect(() => {
+    const startTimeout = setTimeout(() => {
+      let i = 0;
+      const interval = setInterval(() => {
+        i++;
+        setCharCount(i);
+        if (i >= fullText.length) {
+          clearInterval(interval);
+          setTimeout(() => setShowCursor(false), 2000);
+        }
+      }, 55);
+      return () => clearInterval(interval);
+    }, delay * 1000);
+    return () => clearTimeout(startTimeout);
+  }, [delay]);
+
+  const displayed = fullText.slice(0, charCount);
+  const remarkableStart = fullText.indexOf("remarkable");
+  const remarkableEnd = remarkableStart + "remarkable".length;
+
+  const parts: React.ReactNode[] = [];
+  for (let i = 0; i < displayed.length; i++) {
+    if (i >= remarkableStart && i < remarkableEnd) {
+      // Find the end of the remarkable substring within displayed
+      const end = Math.min(displayed.length, remarkableEnd);
+      parts.push(
+        <span key="remarkable" style={{ color: "#E05252", WebkitTextStroke: "0" }}>
+          {displayed.slice(remarkableStart, end)}
+        </span>
+      );
+      i = end - 1;
+    } else {
+      parts.push(displayed[i]);
+    }
+  }
+
+  return (
+    <span className="font-[family-name:var(--font-display)] italic text-[clamp(1.5rem,3.5vw,3rem)] leading-[1.2] text-[#1A1A1A]">
+      {parts}
+      {showCursor && (
+        <motion.span
+          className="inline-block ml-0.5"
+          style={{ color: "#E05252" }}
+          animate={{ opacity: [1, 0] }}
+          transition={{ duration: 0.6, repeat: Infinity, repeatType: "reverse" }}
+        >
+          |
+        </motion.span>
+      )}
+    </span>
+  );
+}
 
 /* ── Letter-by-letter reveal with hover drift + ripple reaction ── */
 function HeroLetter({
@@ -49,7 +109,6 @@ function HeroLetter({
   const isSpace = char === " ";
   const [displayedChar, setDisplayedChar] = useState(isSpace ? "\u00A0" : isMobile ? char : "φ");
 
-  /* ── Character morph: φ → random symbols → real letter (desktop only) ── */
   useEffect(() => {
     if (isSpace || isMobile) return;
     const delayMs = (baseDelay + index * 0.06) * 1000;
@@ -78,7 +137,6 @@ function HeroLetter({
     return () => clearTimeout(timeout);
   }, [controls, baseDelay, index]);
 
-  /* ── RAF loop: check if any ripple ring is passing through this letter (desktop only) ── */
   useEffect(() => {
     if (!ripplesRef || isMobile) return;
     let rafId: number;
@@ -136,11 +194,10 @@ function HeroLetter({
     return () => cancelAnimationFrame(rafId);
   }, [ripplesRef, controls, isMobile]);
 
-  /* ── RAF loop: magnetic pull toward cursor (desktop only, reduced MAX_DIST) ── */
   useEffect(() => {
     if (!mouseClientX || !mouseClientY || isMobile) return;
     let rafId: number;
-    const MAX_DIST = 300; // reduced from 2000
+    const MAX_DIST = 300;
     const MAX_PULL = 12;
 
     const update = () => {
@@ -173,7 +230,6 @@ function HeroLetter({
   }, [mouseClientX, mouseClientY, isMobile]);
 
   if (isMobile) {
-    // Simplified mobile render — no magnetic wrapper, no hover
     return (
       <motion.span
         ref={letterRef}
@@ -273,11 +329,27 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
   const isMobile = useIsMobile();
   const { greeting, time } = useSydneyGreeting();
 
+  /* ── Ink blob refs ── */
+  const inkBlobRef = useRef<HTMLDivElement>(null);
+  const ethanContainerRef = useRef<HTMLDivElement>(null);
+
   /* ── Scroll velocity DOM refs ── */
   const desktopTextRef = useRef<HTMLDivElement>(null);
   const phiRef = useRef<HTMLDivElement>(null);
   const metaLeftRef = useRef<HTMLSpanElement>(null);
   const metaRightRef = useRef<HTMLSpanElement>(null);
+
+  /* ── Scroll-triggered name merge ── */
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+
+  const ethanX = useTransform(scrollYProgress, [0, 0.6], ["0%", "35%"]);
+  const ethanY = useTransform(scrollYProgress, [0, 0.6], ["0%", "80%"]);
+  const wuX = useTransform(scrollYProgress, [0, 0.6], ["0%", "-55%"]);
+  const wuY = useTransform(scrollYProgress, [0, 0.6], ["0%", "-60%"]);
+  const mergeScale = useTransform(scrollYProgress, [0, 0.6], [1, 0.85]);
 
   /* ── Scroll velocity RAF loop (desktop only) ── */
   useEffect(() => {
@@ -305,6 +377,41 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
   }, [scrollVelocityRef, isMobile]);
+
+  /* ── Ink blob RAF loop ── */
+  useEffect(() => {
+    if (isMobile) return;
+    const INK_MAX_RADIUS = 180;
+    const INK_RANGE = 400;
+    let rafId: number;
+
+    const update = () => {
+      rafId = requestAnimationFrame(update);
+      const container = ethanContainerRef.current;
+      const blob = inkBlobRef.current;
+      if (!container || !blob) return;
+
+      const rect = container.getBoundingClientRect();
+      const mx = mouseClientX.current;
+      const my = mouseClientY.current;
+      const relX = mx - rect.left;
+      const relY = my - rect.top;
+      const pctX = (relX / rect.width) * 100;
+      const pctY = (relY / rect.height) * 100;
+
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dist = Math.sqrt((mx - cx) ** 2 + (my - cy) ** 2);
+      const radius = dist < INK_RANGE ? INK_MAX_RADIUS * (1 - dist / INK_RANGE) : 0;
+
+      blob.style.setProperty("--ink-x", `${pctX}%`);
+      blob.style.setProperty("--ink-y", `${pctY}%`);
+      blob.style.setProperty("--ink-r", `${radius}px`);
+    };
+
+    rafId = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(rafId);
+  }, [isMobile]);
 
   /* ── Raw mouse position for magnetic letters (desktop only) ── */
   const mouseClientX = useRef(0);
@@ -433,36 +540,49 @@ export default function Hero({ ripplesRef, scrollVelocityRef }: { ripplesRef?: R
         {/* ── DESKTOP ── */}
         <div className="hidden md:block">
           <div ref={desktopTextRef} className="relative" style={{ transition: "transform 0.3s ease-out", height: "clamp(24rem, 55vh, 42rem)" }}>
-            {/* Ethan — outline/stroke, top-left */}
-            <div className="absolute top-0 left-0 hero-stroke-text">
-              <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY} isMobile={isMobile}
-                text="Ethan"
-                baseDelay={0.2}
-                className="font-[family-name:var(--font-display)] italic leading-[0.88] tracking-[-0.04em] text-[clamp(5rem,14vw,18rem)]"
-              />
-            </div>
+            {/* Ethan — outline/stroke, top-left, with ink blob */}
+            <motion.div style={{ x: ethanX, y: ethanY, scale: mergeScale }}>
+              <div ref={ethanContainerRef} className="absolute top-0 left-0 hero-stroke-text ink-blob-container">
+                <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY} isMobile={isMobile}
+                  text="Ethan"
+                  baseDelay={0.2}
+                  className="font-[family-name:var(--font-display)] italic leading-[0.88] tracking-[-0.04em] text-[clamp(5rem,14vw,18rem)]"
+                />
+                {/* Ink blob fill layer */}
+                <div
+                  ref={inkBlobRef}
+                  className="ink-blob-fill"
+                >
+                  <div className="font-[family-name:var(--font-display)] italic leading-[0.88] tracking-[-0.04em] text-[clamp(5rem,14vw,18rem)] text-[#1A1A1A]">
+                    Ethan
+                  </div>
+                </div>
+              </div>
+            </motion.div>
 
             {/* Wu — solid fill, bottom-right */}
-            <div className="absolute bottom-[4%] right-[3%]">
-              <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY} isMobile={isMobile}
-                text="Wu"
-                baseDelay={0.4}
-                className={`${heroFont} text-[clamp(8rem,22vw,28rem)]`}
-              />
-            </div>
+            <motion.div style={{ x: wuX, y: wuY, scale: mergeScale }}>
+              <div className="absolute bottom-[4%] right-[3%]">
+                <AnimatedHeading ripplesRef={ripplesRef} mouseClientX={mouseClientX} mouseClientY={mouseClientY} isMobile={isMobile}
+                  text="Wu"
+                  baseDelay={0.4}
+                  className={`${heroFont} text-[clamp(8rem,22vw,28rem)]`}
+                />
+              </div>
+            </motion.div>
           </div>
         </div>
       </motion.div>
 
-      {/* ── Tagline — desktop only ── */}
-      <motion.p
-        className="hidden md:block absolute bottom-28 left-[var(--site-px)] z-10 font-[family-name:var(--font-display)] italic text-[clamp(1.5rem,3.5vw,3rem)] leading-[1.2] hero-stroke-text hero-tagline"
+      {/* ── Tagline — desktop only (TypewriterTagline) ── */}
+      <motion.div
+        className="hidden md:block absolute bottom-28 left-[var(--site-px)] z-10"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, ease: EASE, delay: 1.0 }}
       >
-        If it&apos;s not remarkable, why bother?
-      </motion.p>
+        <TypewriterTagline delay={1.2} />
+      </motion.div>
 
       {/* ── Bottom bar — desktop only ── */}
       <motion.p

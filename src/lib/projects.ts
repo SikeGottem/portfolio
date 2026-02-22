@@ -7,6 +7,8 @@ export interface Project {
   brief: string;
   approach: string;
   previewImage?: string;
+  accentColor?: string;
+  accentTextLight?: boolean;
 }
 
 export const projects: Project[] = [
@@ -17,6 +19,8 @@ export const projects: Project[] = [
     description: "Website rebuild for a Hong Kong consulting firm",
     tags: ["WEB", "DESIGN"],
     year: 2026,
+    accentColor: "#0A1E3D",
+    accentTextLight: true,
     brief:
       "Sun Street HK needed a complete digital overhaul — their existing site didn't reflect the calibre of their consulting work or their position in the Hong Kong market.",
     approach:
@@ -29,6 +33,8 @@ export const projects: Project[] = [
     description: "Branding and investor pitch deck for a global asset manager",
     tags: ["BRAND", "DECK"],
     year: 2026,
+    accentColor: "#1B3D2F",
+    accentTextLight: true,
     brief:
       "Bristlecone required a pitch deck that could stand up in rooms with serious capital. The existing materials were generic and undersold their track record.",
     approach:
@@ -41,6 +47,8 @@ export const projects: Project[] = [
     description: "Brand identity for a premium skincare line",
     tags: ["BRAND", "DESIGN"],
     year: 2025,
+    accentColor: "#1C2E1F",
+    accentTextLight: true,
     brief:
       "S17 needed a brand identity that felt premium without being pretentious — something that could sit on a shelf next to established names and hold its own.",
     approach:
@@ -53,6 +61,8 @@ export const projects: Project[] = [
     description: "Website for a Sydney skincare salon",
     tags: ["WEB"],
     year: 2025,
+    accentColor: "#C4A87C",
+    accentTextLight: false,
     brief:
       "Limage wanted a website that matched the experience of walking into their salon — calm, elevated, and intentional.",
     approach:
@@ -68,6 +78,8 @@ export const experiments: Project[] = [
     description: "SaaS platform for freelance designers",
     tags: ["PRODUCT", "CODE"],
     year: 2026,
+    accentColor: "#E05252",
+    accentTextLight: true,
     brief:
       "Freelance designers waste hours on admin — scoping projects, writing proposals, chasing clients. Briefed was built to fix that.",
     approach:
@@ -80,6 +92,8 @@ export const experiments: Project[] = [
     description: "Social app — daily questions that spark real conversations",
     tags: ["APP", "PRODUCT", "CODE"],
     year: 2025,
+    accentColor: "#F4A340",
+    accentTextLight: false,
     brief:
       "Social media is broken. Everyone performs, nobody connects. Campfire was an experiment in building a social platform around genuine conversation — one question a day, answered honestly, shared with close friends.",
     approach:
@@ -92,6 +106,8 @@ export const experiments: Project[] = [
     description: "Collaborative weekly journal for friend groups",
     tags: ["APP", "PRODUCT", "CODE"],
     year: 2025,
+    accentColor: "#6B4EE6",
+    accentTextLight: true,
     brief:
       "Friend groups share moments constantly but have no way to collect them. Lore was a collaborative pinboard journal — a shared digital scrapbook that builds itself week by week.",
     approach:
@@ -104,6 +120,8 @@ export const experiments: Project[] = [
     description: "Real-time coordination platform for AI agents",
     tags: ["API", "PRODUCT", "CODE"],
     year: 2026,
+    accentColor: "#1A1A1A",
+    accentTextLight: true,
     brief:
       "AI agents on different platforms can't talk to each other. Agent Comms is a standalone coordination API — threads, tasks, shared memory, handoffs — so agents can work together in real time.",
     approach:
