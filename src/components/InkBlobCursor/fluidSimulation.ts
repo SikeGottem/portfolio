@@ -204,8 +204,9 @@ const displayShaderSource = `
       c += bloom;
     #endif
 
-    float a = max(c.r, max(c.g, c.b));
-    gl_FragColor = vec4(c, a);
+    float intensity = max(c.r, max(c.g, c.b));
+    // Black ink mode: dye intensity drives alpha, color is always black
+    gl_FragColor = vec4(0.0, 0.0, 0.0, intensity * 0.012);
   }
 `;
 
@@ -503,7 +504,7 @@ function createPointer(): Pointer {
     deltaY: 0,
     down: false,
     moved: false,
-    color: [30, 0, 300],
+    color: [1.5, 1.5, 1.5],
   };
 }
 
@@ -989,6 +990,7 @@ export class FluidSimulation {
   // --- Public API ---
 
   start() {
+    this.resize();
     this.updateKeywords();
     const step = () => {
       if (this.destroyed) return;
@@ -1016,13 +1018,26 @@ export class FluidSimulation {
     }
   }
 
+  // Called with pre-normalized 0-1 texcoords
+  updatePointerMoveDataNormalized(id: number, texX: number, texY: number) {
+    const pointer = this.pointers[0];
+    pointer.prevTexcoordX = pointer.texcoordX;
+    pointer.prevTexcoordY = pointer.texcoordY;
+    pointer.texcoordX = texX;
+    pointer.texcoordY = texY;
+    pointer.deltaX = this.correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX);
+    pointer.deltaY = this.correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY);
+    pointer.moved = Math.abs(pointer.deltaX) > 0 || Math.abs(pointer.deltaY) > 0;
+    pointer.down = true;
+  }
+
   // Called on pointer/mouse move
   updatePointerMoveData(id: number, posX: number, posY: number) {
     const pointer = this.pointers[0];
     pointer.prevTexcoordX = pointer.texcoordX;
     pointer.prevTexcoordY = pointer.texcoordY;
-    pointer.texcoordX = posX / this.canvas.width;
-    pointer.texcoordY = 1.0 - posY / this.canvas.height;
+    pointer.texcoordX = posX / this.canvas.clientWidth;
+    pointer.texcoordY = 1.0 - posY / this.canvas.clientHeight;
     pointer.deltaX = this.correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX);
     pointer.deltaY = this.correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY);
     pointer.moved = Math.abs(pointer.deltaX) > 0 || Math.abs(pointer.deltaY) > 0;
@@ -1123,7 +1138,8 @@ export class FluidSimulation {
   private splatPointer(pointer: Pointer) {
     const dx = pointer.deltaX * this.config.SPLAT_FORCE;
     const dy = pointer.deltaY * this.config.SPLAT_FORCE;
-    this.splat(pointer.texcoordX, pointer.texcoordY, dx, dy, pointer.color);
+    const color = generateColor(this.config);
+    this.splat(pointer.texcoordX, pointer.texcoordY, dx, dy, color);
   }
 
   private multipleSplats(amount: number) {

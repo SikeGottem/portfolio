@@ -199,8 +199,8 @@ function HeroLetter({
   useEffect(() => {
     if (!mouseClientX || !mouseClientY || isMobile) return;
     let rafId: number;
-    const MAX_DIST = 300;
-    const MAX_PULL = 12;
+    const MAX_DIST = 500;
+    const MAX_PULL = 35;
     const INK_RADIUS = 200;
 
     const update = () => {
@@ -264,7 +264,7 @@ function HeroLetter({
   }
 
   return (
-    <span ref={magnetRef} className="inline-block" style={{ transition: "transform 0.15s ease-out" }}>
+    <span ref={magnetRef} className="inline-block" style={{ transition: "transform 0.1s ease-out" }}>
     <motion.span
       ref={letterRef}
       className="inline-block cursor-default select-none relative"

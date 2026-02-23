@@ -3,68 +3,68 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { FluidSimulation, FluidConfig } from './fluidSimulation';
 
-export interface InkBlobCursorProps {
-  config?: Partial<FluidConfig>;
-  className?: string;
-  style?: React.CSSProperties;
-  enabled?: boolean;
-}
-
-/**
- * InkBlobCursor — Black, subtle ink trail cursor effect for light backgrounds.
- */
-export default function InkBlobCursor({
-  config: configOverrides,
-  className,
-  style,
-  enabled = true,
-}: InkBlobCursorProps) {
+export default function InkBlobCursor() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const simRef = useRef<FluidSimulation | null>(null);
+  const inHeroRef = useRef(false);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!simRef.current) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    simRef.current.updatePointerMoveData(0, x, y);
+    if (!simRef.current || !canvasRef.current) return;
+
+    // Check if over hero
+    const hero = document.getElementById('hero');
+    if (hero) {
+      const rect = hero.getBoundingClientRect();
+      const inside =
+        e.clientX >= rect.left && e.clientX <= rect.right &&
+        e.clientY >= rect.top && e.clientY <= rect.bottom;
+
+      if (inside !== inHeroRef.current) {
+        inHeroRef.current = inside;
+        if (canvasRef.current) {
+          canvasRef.current.style.opacity = inside ? '1' : '0';
+        }
+      }
+      if (!inside) return;
+    }
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = 1.0 - (e.clientY - rect.top) / rect.height;
+    simRef.current.updatePointerMoveDataNormalized(0, x, y);
   }, []);
 
   const handleMouseUp = useCallback(() => {
-    if (!simRef.current) return;
-    simRef.current.updatePointerUpData();
+    simRef.current?.updatePointerUpData();
   }, []);
 
   useEffect(() => {
-    if (!enabled || !canvasRef.current) return;
+    if (!canvasRef.current) return;
+    if (window.matchMedia('(pointer: coarse)').matches) return;
 
     const canvas = canvasRef.current;
 
-    // Black, subtle defaults for light backgrounds
-    const subtleBlackConfig: Partial<FluidConfig> = {
-      SPLAT_RADIUS: 0.08,
-      SPLAT_FORCE: 3000,
-      DENSITY_DISSIPATION: 3.5,
-      VELOCITY_DISSIPATION: 1.2,
-      PRESSURE: 0.4,
+    const config: Partial<FluidConfig> = {
+      SPLAT_RADIUS: 0.03,
+      SPLAT_FORCE: 1500,
+      DENSITY_DISSIPATION: 5.0,
+      VELOCITY_DISSIPATION: 2.0,
+      PRESSURE: 0.2,
       PRESSURE_ITERATIONS: 10,
-      CURL: 15,
+      CURL: 25,
       TRANSPARENT: true,
       BLOOM: false,
       SHADING: true,
       COLORFUL: false,
-      COLOR_PALETTE: [[15, 15, 15], [30, 30, 30], [10, 10, 10]],
+      COLOR_PALETTE: [[255, 255, 255], [200, 200, 200], [230, 230, 230]],
       AUTO_SPLATS: false,
       SPLAT_ON_MOVE_ONLY: true,
       SIM_RESOLUTION: 64,
       DYE_RESOLUTION: 512,
-      ...configOverrides,
     };
 
     try {
-      const sim = new FluidSimulation(canvas, subtleBlackConfig);
+      const sim = new FluidSimulation(canvas, config);
       simRef.current = sim;
       sim.start();
 
@@ -80,14 +80,11 @@ export default function InkBlobCursor({
     } catch (err) {
       console.warn('InkBlobCursor: WebGL not supported', err);
     }
-  }, [enabled, configOverrides, handleMouseMove, handleMouseUp]);
-
-  if (!enabled) return null;
+  }, [handleMouseMove, handleMouseUp]);
 
   return (
     <canvas
       ref={canvasRef}
-      className={className}
       style={{
         position: 'fixed',
         top: 0,
@@ -96,7 +93,7 @@ export default function InkBlobCursor({
         height: '100vh',
         pointerEvents: 'none',
         zIndex: 9998,
-        ...style,
+        transition: 'opacity 0.3s ease',
       }}
     />
   );
